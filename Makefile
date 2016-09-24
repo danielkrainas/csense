@@ -1,14 +1,12 @@
 VERSION_FILE=VERSION
 SRC_PKGS=$(shell go list ./... | grep -v vendor)
-REV=
-
-ifneq ($(NO_REV),)
+ifeq ($(strip $(NO_REV)),)
 	REV=$(shell git rev-parse --short HEAD)
 endif
 
 ifeq ($(BUILD_VERSION),)
 	VERSION=$(shell cat $(VERSION_FILE))
-	ifneq ($(REV),) 
+	ifeq ($(strip $(REV)),) 
 		BUILD_VERSION=$(VERSION)
 	else
 		BUILD_VERSION=$(VERSION)-$(REV)
