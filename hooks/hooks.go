@@ -1,5 +1,12 @@
 package hooks
 
+import (
+	"time"
+
+	"github.com/danielkrainas/csense/containers"
+	"github.com/danielkrainas/csense/shared/uuid"
+)
+
 type Operand string
 
 var (
@@ -14,25 +21,11 @@ type Condition struct {
 }
 
 type Criteria struct {
-	Name      *Condition `json:"name,omitempty"`
-	ImageName *Condition `json:"image_name,omitempty"`
-
-	Created bool `json:"created"`
-
-	Deleted bool `json:"deleted"`
-
-	Labels map[string]string `json:"labels"`
-}
-
-type Hook struct {
-	ID       string      `json:"id"`
-	Name     string      `json:"name"`
-	Url      string      `json:"url"`
-	Events   []EventType `json:"string"`
-	Criteria *Criteria   `json:"criteria"`
-	TTL      int64       `json:"ttl"`
-	Created  int64       `json:"created_at"`
-	Format   BodyFormat  `json:"format"`
+	Name      *Condition        `json:"name,omitempty"`
+	ImageName *Condition        `json:"image_name,omitempty"`
+	Created   bool              `json:"created,omitempty"`
+	Deleted   bool              `json:"deleted,omitempty"`
+	Labels    map[string]string `json:"labels,omitempty"`
 }
 
 type BodyFormat string
@@ -47,3 +40,30 @@ var (
 	EventCreate EventType = "create"
 	EventDelete EventType = "delete"
 )
+
+type Hook struct {
+	ID       string      `json:"id"`
+	Name     string      `json:"name"`
+	Url      string      `json:"url"`
+	Events   []EventType `json:"events"`
+	Criteria *Criteria   `json:"criteria"`
+	TTL      int64       `json:"ttl"`
+	Created  int64       `json:"created"`
+	Format   BodyFormat  `json:"format"`
+}
+
+func DefaultHook() *Hook {
+	return &Hook{
+		ID:      uuid.Generate(),
+		Events:  make([]EventType, 0),
+		TTL:     -1,
+		Created: time.Now().Unix(),
+		Format:  FormatJSON,
+	}
+}
+
+type Reaction struct {
+	Hook      *Hook
+	Host      *containers.HostInfo
+	Container *containers.ContainerInfo
+}

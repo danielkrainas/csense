@@ -1,14 +1,14 @@
-package statechange
+package callhook
 
 import (
-	"github.com/danielkrainas/csense/containers"
+	"github.com/danielkrainas/csense/hooks"
 	"github.com/danielkrainas/csense/pipeline"
 )
 
 const TYPE = "call_hook"
 
 type Message struct {
-	body *containers.StateChange
+	hook *hooks.Hook
 }
 
 func (msg *Message) Type() string {
