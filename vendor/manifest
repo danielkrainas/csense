@@ -8,6 +8,50 @@
 			"revision": "31c299268d302dd0aa9a0dcf765a3d58971ac83f",
 			"branch": "v2",
 			"notests": true
+		},
+		{
+			"importpath": "github.com/golang/glog",
+			"repository": "https://github.com/golang/glog",
+			"vcs": "git",
+			"revision": "23def4e6c14b4da8ac2ed8007337bc5eb5007998",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/google/cadvisor/cache/memory",
+			"repository": "https://github.com/google/cadvisor",
+			"vcs": "git",
+			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
+			"branch": "master",
+			"path": "/cache/memory",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/google/cadvisor/info/v1",
+			"repository": "https://github.com/google/cadvisor",
+			"vcs": "git",
+			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
+			"branch": "master",
+			"path": "/info/v1",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/google/cadvisor/storage",
+			"repository": "https://github.com/google/cadvisor",
+			"vcs": "git",
+			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
+			"branch": "master",
+			"path": "/storage",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/google/cadvisor/utils",
+			"repository": "https://github.com/google/cadvisor",
+			"vcs": "git",
+			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
+			"branch": "master",
+			"path": "/utils",
+			"notests": true
 		}
 	]
 }
