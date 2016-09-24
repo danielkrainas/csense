@@ -180,11 +180,19 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/docker/engine-api",
+			"repository": "https://github.com/docker/engine-api",
+			"vcs": "git",
+			"revision": "3d1601b9d2436a70b0dfc045a23f6503d19195df",
+			"branch": "release/1.12",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/docker/engine-api/client",
 			"repository": "https://github.com/docker/engine-api",
 			"vcs": "git",
-			"revision": "4290f40c056686fcaa5c9caf02eac1dde9315adf",
-			"branch": "master",
+			"revision": "3d1601b9d2436a70b0dfc045a23f6503d19195df",
+			"branch": "release/1.12",
 			"path": "/client",
 			"notests": true
 		},
