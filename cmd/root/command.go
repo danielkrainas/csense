@@ -5,7 +5,7 @@ import (
 )
 
 var Info = &cmd.Info{
-	Use:   "cmeter",
-	Short: "`cmeter`",
-	Long:  "`cmeter`",
+	Use:   "csense",
+	Short: "`csense`",
+	Long:  "`csense`",
 }
