@@ -1,11 +1,18 @@
 VERSION_FILE=VERSION
 SRC_PKGS=$(shell go list ./... | grep -v vendor)
-ifeq ($(NO_REV),)
+REV=
+
+ifneq ($(NO_REV),)
 	REV=$(shell git rev-parse --short HEAD)
 endif
 
 ifeq ($(BUILD_VERSION),)
-	BUILD_VERSION=$(shell cat $(VERSION_FILE))-$(REV)
+	VERSION=$(shell cat $(VERSION_FILE))
+	ifneq ($(REV),) 
+		BUILD_VERSION=$(VERSION)
+	else
+		BUILD_VERSION=$(VERSION)-$(REV)
+	endif
 endif
 
 IMAGE_REPO=dakr/csense
@@ -19,6 +26,7 @@ all: compile
 
 clean:
 	go clean ./...
+	rm dist
 
 compile:
 	go build -ldflags "-X main.appVersion=$(BUILD_VERSION)" .
