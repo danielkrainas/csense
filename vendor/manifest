@@ -274,6 +274,15 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/google/cadvisor/collector",
+			"repository": "https://github.com/google/cadvisor",
+			"vcs": "git",
+			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
+			"branch": "master",
+			"path": "/collector",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/google/cadvisor/container",
 			"repository": "https://github.com/google/cadvisor",
 			"vcs": "git",
@@ -337,6 +346,15 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/google/cadvisor/manager",
+			"repository": "https://github.com/google/cadvisor",
+			"vcs": "git",
+			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
+			"branch": "master",
+			"path": "/manager",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/google/cadvisor/manager/watcher",
 			"repository": "https://github.com/google/cadvisor",
 			"vcs": "git",
@@ -355,12 +373,30 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/google/cadvisor/summary",
+			"repository": "https://github.com/google/cadvisor",
+			"vcs": "git",
+			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
+			"branch": "master",
+			"path": "/summary",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/google/cadvisor/utils",
 			"repository": "https://github.com/google/cadvisor",
 			"vcs": "git",
 			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
 			"branch": "master",
 			"path": "/utils",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/google/cadvisor/version",
+			"repository": "https://github.com/google/cadvisor",
+			"vcs": "git",
+			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
+			"branch": "master",
+			"path": "/version",
 			"notests": true
 		},
 		{
