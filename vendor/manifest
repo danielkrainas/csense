@@ -319,6 +319,15 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/google/cadvisor/info/v2",
+			"repository": "https://github.com/google/cadvisor",
+			"vcs": "git",
+			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
+			"branch": "master",
+			"path": "/info/v2",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/google/cadvisor/machine",
 			"repository": "https://github.com/google/cadvisor",
 			"vcs": "git",
