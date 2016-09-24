@@ -7,7 +7,7 @@ ifeq ($(BUILD_VERSION),)
 endif
 
 IMAGE_REPO=dakr/csense
-ifeq ($(IMAGE),)
+ifeq ($(IMAGE_NAME),)
 	IMAGE_NAME=$(IMAGE_REPO):$(BUILD_VERSION)
 endif 
 
@@ -26,6 +26,7 @@ dist:
 
 image:
 	docker build -t $(IMAGE_NAME) .
+	docker tag $(IMAGE_NAME) $(IMAGE_REPO):latest
 
 test:
 	set -e; 
