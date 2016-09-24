@@ -292,6 +292,15 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/google/cadvisor/events",
+			"repository": "https://github.com/google/cadvisor",
+			"vcs": "git",
+			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
+			"branch": "master",
+			"path": "/events",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/google/cadvisor/fs",
 			"repository": "https://github.com/google/cadvisor",
 			"vcs": "git",
