@@ -8,7 +8,7 @@ import (
 
 	"github.com/danielkrainas/csense/cmd"
 	_ "github.com/danielkrainas/csense/cmd/agent"
-	_ "github.com/danielkrainas/csense/cmd/root"
+	"github.com/danielkrainas/csense/cmd/root"
 	_ "github.com/danielkrainas/csense/cmd/version"
 	_ "github.com/danielkrainas/csense/containers/embedded"
 	"github.com/danielkrainas/csense/context"

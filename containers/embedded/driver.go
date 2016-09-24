@@ -11,7 +11,6 @@ import (
 	cadvisorMetrics "github.com/google/cadvisor/container"
 	"github.com/google/cadvisor/events"
 	"github.com/google/cadvisor/info/v1"
-	"github.com/google/cadvisor/info/v2"
 	"github.com/google/cadvisor/manager"
 	"github.com/google/cadvisor/utils/sysfs"
 
@@ -126,12 +125,7 @@ func (d *driver) GetContainers(ctx context.Context) ([]*containers.ContainerInfo
 
 func (d *driver) GetContainer(ctx context.Context, name string) (*containers.ContainerInfo, error) {
 	r := &v1.ContainerInfoRequest{NumStats: 0}
-	specMap, err := d.manager.GetContainerSpec(name, v2.RequestOptions{
-		IdType:    "name",
-		Count:     0,
-		Recursive: false,
-	})
-
+	info, err := d.manager.GetContainerInfo(name, r)
 	if err != nil {
 		if strings.Contains(err.Error(), "unable to find data for container") {
 			return nil, containers.ErrContainerNotFound

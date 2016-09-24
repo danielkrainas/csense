@@ -14,6 +14,31 @@ const (
 	EventContainerExisted  EventType = "containerExisted"
 )
 
+type State string
+
+const (
+	StateRunning State = "running"
+	StateStopped State = "stopped"
+	StateUnknown State = "unknown"
+)
+
+func StateFromEvent(eventType EventType) State {
+	switch eventType {
+	case EventContainerCreation:
+		return StateRunning
+	case EventContainerDeletion:
+		return StateStopped
+	}
+
+	return StateUnknown
+}
+
+type StateChange struct {
+	State     State          `json:"state"`
+	Source    *Event         `json:"source_event"`
+	Container *ContainerInfo `json:"container"`
+}
+
 type Event struct {
 	Type      EventType           `json:"type"`
 	Container *ContainerReference `json:""`

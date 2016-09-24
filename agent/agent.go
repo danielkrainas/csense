@@ -2,7 +2,6 @@ package agent
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -14,6 +13,7 @@ import (
 	"github.com/danielkrainas/csense/pipeline"
 	logFilter "github.com/danielkrainas/csense/pipeline/filters/logger"
 	notHandledFilter "github.com/danielkrainas/csense/pipeline/filters/nothandled"
+	"github.com/danielkrainas/csense/pipeline/messages/statechange"
 )
 
 type Agent struct {
@@ -29,35 +29,11 @@ type Agent struct {
 func (agent *Agent) Run() error {
 	context.GetLogger(agent).Info("starting agent")
 	defer context.GetLogger(agent).Info("shutting down agent")
-	err := agent.InitializeContainers()
-	if err != nil {
-		return fmt.Errorf("error initializing container states: %v", err)
-	}
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go agent.ProcessEvents(wg)
-	wg.Wait()
+	agent.ProcessEvents()
 	return nil
 }
 
-func (agent *Agent) InitializeContainers() error {
-	containers, err := agent.containers.GetContainers(agent)
-	if err != nil {
-		return err
-	}
-
-	context.GetLogger(agent).Infof("found %d active containers", len(containers))
-	for _, containerInfo := range containers {
-		m := containerdiscovery.NewMessage(containerInfo)
-		go agent.pipeline.Send(agent, m)
-	}
-
-	return nil
-}
-
-func (agent *Agent) ProcessEvents(wg sync.WaitGroup) {
-	defer wg.Done()
+func (agent *Agent) ProcessEvents() {
 	eventChan, err := agent.containers.WatchEvents(agent, containers.EventContainerCreation, containers.EventContainerDeletion)
 	if err != nil {
 		context.GetLogger(agent).Panicf("error opening event channel: %v", err)
@@ -66,21 +42,15 @@ func (agent *Agent) ProcessEvents(wg sync.WaitGroup) {
 	context.GetLogger(agent).Info("event monitor started")
 	defer context.GetLogger(agent).Info("event monitor stopped")
 	for event := range eventChan.GetChannel() {
-		var c *containers.ContainerInfo
-
-		if cc, found := agent.registry.Get(event.Container.Name); found {
-			c = cc
-		} else {
-			c, err = agent.containers.GetContainer(agent, event.Container.Name)
-			if err != nil {
-				if err == containers.ErrContainerNotFound {
-					context.GetLogger(agent).Warnf("event container info for %q not available", event.Container.Name)
-				} else {
-					context.GetLogger(agent).Errorf("error getting event container info: %v", err)
-				}
-
-				continue
+		c, err := agent.containers.GetContainer(agent, event.Container.Name)
+		if err != nil {
+			if err == containers.ErrContainerNotFound {
+				context.GetLogger(agent).Warnf("event container info for %q not available", event.Container.Name)
+			} else {
+				context.GetLogger(agent).Errorf("error getting event container info: %v", err)
 			}
+
+			continue
 		}
 
 		change := &containers.StateChange{
