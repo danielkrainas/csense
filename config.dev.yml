@@ -1,0 +1,9 @@
+version: 0.1
+
+logging:
+  level: 'debug'
+  formatter: 'text'
+  fields:
+    userfield1: 'value'
+
+containers: 'embedded'
