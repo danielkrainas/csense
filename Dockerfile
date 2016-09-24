@@ -4,4 +4,4 @@ COPY ./dist /bin/csense
 
 WORKDIR /
 
-CMD /bin/csense
+ENTRYPOINT ["/bin/csense"]
