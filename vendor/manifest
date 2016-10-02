@@ -55,15 +55,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/aws/aws-sdk-go/private/protocol/query",
-			"repository": "https://github.com/aws/aws-sdk-go",
-			"vcs": "git",
-			"revision": "87a2cff6c2601f69429f336067d1deb7f713d1c6",
-			"branch": "master",
-			"path": "/private/protocol/query",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/aws/aws-sdk-go/service/sts",
 			"repository": "https://github.com/aws/aws-sdk-go",
 			"vcs": "git",
@@ -77,6 +68,14 @@
 			"repository": "https://github.com/blang/semver",
 			"vcs": "git",
 			"revision": "60ec3488bfea7cca02b021d106d9911120d25fe9",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/cloudfoundry-incubator/candiedyaml",
+			"repository": "https://github.com/cloudfoundry-incubator/candiedyaml",
+			"vcs": "git",
+			"revision": "99c3df83b51532e3615f851d8c2dbb638f5313bf",
 			"branch": "master",
 			"notests": true
 		},
@@ -188,24 +187,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/docker/engine-api/client",
-			"repository": "https://github.com/docker/engine-api",
-			"vcs": "git",
-			"revision": "3d1601b9d2436a70b0dfc045a23f6503d19195df",
-			"branch": "release/1.12",
-			"path": "/client",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/docker/engine-api/types",
-			"repository": "https://github.com/docker/engine-api",
-			"vcs": "git",
-			"revision": "4290f40c056686fcaa5c9caf02eac1dde9315adf",
-			"branch": "master",
-			"path": "/types",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/docker/go-connections/nat",
 			"repository": "https://github.com/docker/go-connections",
 			"vcs": "git",
@@ -245,6 +226,14 @@
 			"repository": "https://github.com/fsnotify/fsnotify",
 			"vcs": "git",
 			"revision": "f12c6236fe7b5cf6bcf30e5935d08cb079d78334",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/ghodss/yaml",
+			"repository": "https://github.com/ghodss/yaml",
+			"vcs": "git",
+			"revision": "aa0c862057666179de291b67d9f093d12b5a8473",
 			"branch": "master",
 			"notests": true
 		},
@@ -377,15 +366,6 @@
 			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
 			"branch": "master",
 			"path": "/manager",
-			"notests": true
-		},
-		{
-			"importpath": "github.com/google/cadvisor/manager/watcher",
-			"repository": "https://github.com/google/cadvisor",
-			"vcs": "git",
-			"revision": "22695f92ea3b916e16568dbbaa821a4d770e7034",
-			"branch": "master",
-			"path": "/manager/watcher",
 			"notests": true
 		},
 		{
