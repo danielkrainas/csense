@@ -3,28 +3,28 @@ package embedded
 import (
 	"github.com/google/cadvisor/events"
 
-	"github.com/danielkrainas/csense/containers"
+	"github.com/danielkrainas/csense/api/v1"
 )
 
 type eventChannel struct {
 	inner   *events.EventChannel
-	channel chan *containers.Event
+	channel chan *v1.ContainerEvent
 }
 
 func newEventChannel(cec *events.EventChannel) *eventChannel {
 	ec := &eventChannel{
 		inner:   cec,
-		channel: make(chan *containers.Event),
+		channel: make(chan *v1.ContainerEvent),
 	}
 
 	go func() {
 		for src := range cec.GetChannel() {
-			e := &containers.Event{
-				Container: &containers.ContainerReference{
+			e := &v1.ContainerEvent{
+				Container: &v1.ContainerReference{
 					Name: src.ContainerName,
 				},
 				Timestamp: src.Timestamp.Unix(),
-				Type:      containers.EventType(string(src.EventType)),
+				Type:      v1.ContainerEventType(string(src.EventType)),
 			}
 
 			ec.channel <- e
@@ -36,7 +36,7 @@ func newEventChannel(cec *events.EventChannel) *eventChannel {
 	return ec
 }
 
-func (ec *eventChannel) GetChannel() <-chan *containers.Event {
+func (ec *eventChannel) GetChannel() <-chan *v1.ContainerEvent {
 	return ec.channel
 }
 

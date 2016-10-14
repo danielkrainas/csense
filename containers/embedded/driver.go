@@ -10,10 +10,11 @@ import (
 	"github.com/google/cadvisor/cache/memory"
 	cadvisorMetrics "github.com/google/cadvisor/container"
 	"github.com/google/cadvisor/events"
-	"github.com/google/cadvisor/info/v1"
+	cadvisorV1 "github.com/google/cadvisor/info/v1"
 	"github.com/google/cadvisor/manager"
 	"github.com/google/cadvisor/utils/sysfs"
 
+	"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/containers"
 	"github.com/danielkrainas/csense/containers/factory"
 	"github.com/danielkrainas/csense/context"
@@ -85,10 +86,10 @@ type driver struct {
 	manager manager.Manager
 }
 
-func (d *driver) WatchEvents(ctx context.Context, types ...containers.EventType) (containers.EventsChannel, error) {
+func (d *driver) WatchEvents(ctx context.Context, types ...v1.ContainerEventType) (containers.EventsChannel, error) {
 	r := events.NewRequest()
 	for _, t := range types {
-		r.EventType[v1.EventType(string(t))] = true
+		r.EventType[cadvisorV1.EventType(string(t))] = true
 	}
 
 	cec, err := d.manager.WatchForEvents(r)
@@ -99,23 +100,23 @@ func (d *driver) WatchEvents(ctx context.Context, types ...containers.EventType)
 	return newEventChannel(cec), nil
 }
 
-func convertContainerInfo(info v1.ContainerInfo) *containers.ContainerInfo {
-	return &containers.ContainerInfo{
-		ContainerReference: &containers.ContainerReference{
+func convertContainerInfo(info cadvisorV1.ContainerInfo) *v1.ContainerInfo {
+	return &v1.ContainerInfo{
+		ContainerReference: &v1.ContainerReference{
 			Name: info.Name,
 		},
 		Labels: info.Labels,
 	}
 }
 
-func (d *driver) GetContainers(ctx context.Context) ([]*containers.ContainerInfo, error) {
-	q := &v1.ContainerInfoRequest{}
+func (d *driver) GetContainers(ctx context.Context) ([]*v1.ContainerInfo, error) {
+	q := &cadvisorV1.ContainerInfoRequest{}
 	rawContainers, err := d.manager.AllDockerContainers(q)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]*containers.ContainerInfo, 0)
+	result := make([]*v1.ContainerInfo, 0)
 	for _, info := range rawContainers {
 		result = append(result, convertContainerInfo(info))
 	}
@@ -123,8 +124,8 @@ func (d *driver) GetContainers(ctx context.Context) ([]*containers.ContainerInfo
 	return result, nil
 }
 
-func (d *driver) GetContainer(ctx context.Context, name string) (*containers.ContainerInfo, error) {
-	r := &v1.ContainerInfoRequest{NumStats: 0}
+func (d *driver) GetContainer(ctx context.Context, name string) (*v1.ContainerInfo, error) {
+	r := &cadvisorV1.ContainerInfoRequest{NumStats: 0}
 	info, err := d.manager.GetContainerInfo(name, r)
 	if err != nil {
 		if strings.Contains(err.Error(), "unable to find data for container") {

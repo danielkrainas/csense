@@ -1,7 +1,18 @@
 version: 0.1
 
 logging:
-  level: 'info'
+  level: 'debug'
   formatter: 'text'
 
+http:
+  addr: ':9181'
+  host: 'localhost'
+  cors:
+    origins: ['*']
+    methods: ['*']
+    headers: ['*']
+    debug: false
+
 containers: 'embedded'
+
+storage: 'memory'

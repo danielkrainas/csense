@@ -58,6 +58,15 @@ func (driver Driver) setParameter(key string, value interface{}) {
 	driver[driver.Type()][key] = value
 }
 
+func (driver *Driver) UnmarshalText(text []byte) error {
+	driverType := string(text)
+	*driver = Driver{
+		driverType: Parameters{},
+	}
+
+	return nil
+}
+
 func (driver *Driver) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var driverMap map[string]Parameters
 	err := unmarshal(&driverMap)
@@ -121,9 +130,24 @@ type LogConfig struct {
 	Fields    map[string]interface{} `yaml:"fields,omitempty"`
 }
 
+type CORSConfig struct {
+	Debug   bool     `yaml:"debug"`
+	Origins []string `yaml:"origins"`
+	Methods []string `yaml:"methods"`
+	Headers []string `yaml:"headers"`
+}
+
+type HTTPConfig struct {
+	Addr string     `yaml:"addr"`
+	Host string     `yaml:"host"`
+	CORS CORSConfig `yaml:"cors"`
+}
+
 type Config struct {
-	Log        LogConfig `yaml:"logging"`
-	Containers Driver    `yaml:"containers"`
+	Log        LogConfig  `yaml:"logging"`
+	Containers Driver     `yaml:"containers"`
+	HTTP       HTTPConfig `yaml:"http"`
+	Storage    Driver     `yaml:"storage"`
 }
 
 type v0_1Config Config

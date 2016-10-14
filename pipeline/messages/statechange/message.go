@@ -1,14 +1,14 @@
 package statechange
 
 import (
-	"github.com/danielkrainas/csense/containers"
+	"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/pipeline"
 )
 
 const TYPE = "state_change"
 
 type Message struct {
-	body *containers.StateChange
+	body *v1.StateChange
 }
 
 func (msg *Message) Type() string {
@@ -21,7 +21,7 @@ func (msg *Message) Body() interface{} {
 
 var _ pipeline.Message = &Message{}
 
-func NewMessage(change *containers.StateChange) *Message {
+func NewMessage(change *v1.StateChange) *Message {
 	return &Message{
 		body: change,
 	}

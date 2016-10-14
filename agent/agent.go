@@ -6,6 +6,8 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
+	"github.com/danielkrainas/csense/api/server"
+	"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/configuration"
 	"github.com/danielkrainas/csense/containers"
 	containersFactory "github.com/danielkrainas/csense/containers/factory"
@@ -14,6 +16,8 @@ import (
 	logFilter "github.com/danielkrainas/csense/pipeline/filters/logger"
 	notHandledFilter "github.com/danielkrainas/csense/pipeline/filters/nothandled"
 	"github.com/danielkrainas/csense/pipeline/messages/statechange"
+	"github.com/danielkrainas/csense/storage"
+	storageDriverFactory "github.com/danielkrainas/csense/storage/factory"
 )
 
 type Agent struct {
@@ -24,17 +28,21 @@ type Agent struct {
 	pipeline pipeline.Pipeline
 
 	containers containers.Driver
+
+	storage storage.Driver
+
+	server *server.Server
 }
 
 func (agent *Agent) Run() error {
 	context.GetLogger(agent).Info("starting agent")
 	defer context.GetLogger(agent).Info("shutting down agent")
 	agent.ProcessEvents()
-	return nil
+	return agent.server.ListenAndServe()
 }
 
 func (agent *Agent) ProcessEvents() {
-	eventChan, err := agent.containers.WatchEvents(agent, containers.EventContainerCreation, containers.EventContainerDeletion)
+	eventChan, err := agent.containers.WatchEvents(agent, v1.EventContainerCreation, v1.EventContainerDeletion)
 	if err != nil {
 		context.GetLogger(agent).Panicf("error opening event channel: %v", err)
 	}
@@ -53,8 +61,8 @@ func (agent *Agent) ProcessEvents() {
 			continue
 		}
 
-		change := &containers.StateChange{
-			State:     containers.StateFromEvent(event.Type),
+		change := &v1.StateChange{
+			State:     v1.StateFromEvent(event.Type),
 			Source:    event,
 			Container: c,
 		}
@@ -73,18 +81,24 @@ func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
 	log := context.GetLogger(ctx)
 	log.Info("initializing agent")
 
-	containersParams := config.Containers.Parameters()
-	if containersParams == nil {
-		containersParams = make(configuration.Parameters)
+	ctx, containersDriver, err := configureContainers(ctx, config)
+	if err != nil {
+		return nil, err
 	}
 
-	containersDriver, err := containersFactory.Create(config.Containers.Type(), containersParams)
+	ctx, storageDriver, err := configureStorage(ctx, config)
+	if err != nil {
+		return nil, err
+	}
+
+	server, err := server.New(ctx, config)
 	if err != nil {
 		return nil, err
 	}
 
 	log.Infof("using %q logging formatter", config.Log.Formatter)
 	log.Infof("using %q containers driver", config.Containers.Type())
+	log.Infof("using %q storage driver", config.Storage.Type())
 
 	filters := []pipeline.Filter{
 		logFilter.New(),
@@ -97,8 +111,42 @@ func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
 		Context:    ctx,
 		config:     config,
 		containers: containersDriver,
+		storage:    storageDriver,
 		pipeline:   pipeline,
+		server:     server,
 	}, nil
+}
+
+func configureContainers(ctx context.Context, config *configuration.Config) (context.Context, containers.Driver, error) {
+	containersParams := config.Containers.Parameters()
+	if containersParams == nil {
+		containersParams = make(configuration.Parameters)
+	}
+
+	containersDriver, err := containersFactory.Create(config.Containers.Type(), containersParams)
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	return context.WithValue(ctx, "containers", containersDriver), containersDriver, nil
+}
+
+func configureStorage(ctx context.Context, config *configuration.Config) (context.Context, storage.Driver, error) {
+	storageParams := config.Storage.Parameters()
+	if storageParams == nil {
+		storageParams = make(configuration.Parameters)
+	}
+
+	storageDriver, err := storageDriverFactory.Create(config.Storage.Type(), storageParams)
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	if err := storageDriver.Init(); err != nil {
+		return ctx, nil, err
+	}
+
+	return storage.ForContext(ctx, storageDriver), storageDriver, nil
 }
 
 func configureLogging(ctx context.Context, config *configuration.Config) (context.Context, error) {

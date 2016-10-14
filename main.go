@@ -12,6 +12,7 @@ import (
 	_ "github.com/danielkrainas/csense/cmd/version"
 	_ "github.com/danielkrainas/csense/containers/embedded"
 	"github.com/danielkrainas/csense/context"
+	_ "github.com/danielkrainas/csense/storage/memory"
 )
 
 var appVersion string

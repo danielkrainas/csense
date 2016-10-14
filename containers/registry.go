@@ -3,21 +3,22 @@ package containers
 import (
 	"sync"
 
+	"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/context"
 )
 
 type Registry struct {
 	mutex      sync.Mutex
-	containers map[string]*ContainerInfo
+	containers map[string]*v1.ContainerInfo
 }
 
 func NewRegistry() *Registry {
 	return &Registry{
-		containers: make(map[string]*ContainerInfo),
+		containers: make(map[string]*v1.ContainerInfo),
 	}
 }
 
-func (registry *Registry) Get(containerName string) (*ContainerInfo, bool) {
+func (registry *Registry) Get(containerName string) (*v1.ContainerInfo, bool) {
 	registry.mutex.Lock()
 	defer registry.mutex.Unlock()
 
@@ -33,7 +34,7 @@ func (registry *Registry) IsRegistered(containerName string) bool {
 	return ok
 }
 
-func (registry *Registry) Register(ctx context.Context, info *ContainerInfo) error {
+func (registry *Registry) Register(ctx context.Context, info *v1.ContainerInfo) error {
 	registry.mutex.Lock()
 	defer registry.mutex.Unlock()
 
