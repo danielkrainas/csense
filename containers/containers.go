@@ -1,9 +1,13 @@
 package containers
 
 import (
+	"errors"
+
 	"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/context"
 )
+
+var ErrContainerNotFound = errors.New("container not found")
 
 type EventsChannel interface {
 	GetChannel() <-chan *v1.ContainerEvent
