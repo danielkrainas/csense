@@ -230,14 +230,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/ghodss/yaml",
-			"repository": "https://github.com/ghodss/yaml",
-			"vcs": "git",
-			"revision": "aa0c862057666179de291b67d9f093d12b5a8473",
-			"branch": "master",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/go-ini/ini",
 			"repository": "https://github.com/go-ini/ini",
 			"vcs": "git",
