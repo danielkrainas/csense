@@ -37,8 +37,13 @@ type Agent struct {
 func (agent *Agent) Run() error {
 	context.GetLogger(agent).Info("starting agent")
 	defer context.GetLogger(agent).Info("shutting down agent")
+
+	if agent.config.HTTP.Enabled {
+		go agent.server.ListenAndServe()
+	}
+
 	agent.ProcessEvents()
-	return agent.server.ListenAndServe()
+	return nil
 }
 
 func (agent *Agent) ProcessEvents() {
@@ -99,6 +104,9 @@ func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
 	log.Infof("using %q logging formatter", config.Log.Formatter)
 	log.Infof("using %q containers driver", config.Containers.Type())
 	log.Infof("using %q storage driver", config.Storage.Type())
+	if !config.HTTP.Enabled {
+		log.Info("http api disabled")
+	}
 
 	filters := []pipeline.Filter{
 		logFilter.New(),

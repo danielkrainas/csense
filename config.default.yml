@@ -5,6 +5,7 @@ logging:
   formatter: 'text'
 
 http:
+  enabled: true
   addr: ':9181'
   host: 'localhost'
   cors:

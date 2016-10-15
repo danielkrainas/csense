@@ -138,9 +138,10 @@ type CORSConfig struct {
 }
 
 type HTTPConfig struct {
-	Addr string     `yaml:"addr"`
-	Host string     `yaml:"host"`
-	CORS CORSConfig `yaml:"cors"`
+	Enabled bool       `yaml:"enabled"`
+	Addr    string     `yaml:"addr"`
+	Host    string     `yaml:"host"`
+	CORS    CORSConfig `yaml:"cors"`
 }
 
 type Config struct {
@@ -161,6 +162,12 @@ func newConfig() *Config {
 		},
 
 		Containers: make(Driver),
+
+		HTTP: HTTPConfig{
+			Enabled: true,
+			Addr:    ":9181",
+			Host:    "localhost",
+		},
 	}
 
 	return config
