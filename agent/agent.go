@@ -12,10 +12,7 @@ import (
 	"github.com/danielkrainas/csense/containers"
 	containersFactory "github.com/danielkrainas/csense/containers/factory"
 	"github.com/danielkrainas/csense/context"
-	"github.com/danielkrainas/csense/pipeline"
-	logFilter "github.com/danielkrainas/csense/pipeline/filters/logger"
-	notHandledFilter "github.com/danielkrainas/csense/pipeline/filters/nothandled"
-	"github.com/danielkrainas/csense/pipeline/messages/statechange"
+	"github.com/danielkrainas/csense/hooks"
 	"github.com/danielkrainas/csense/storage"
 	storageDriverFactory "github.com/danielkrainas/csense/storage/factory"
 )
@@ -25,13 +22,13 @@ type Agent struct {
 
 	config *configuration.Config
 
-	pipeline pipeline.Pipeline
-
 	containers containers.Driver
 
 	storage storage.Driver
 
 	server *server.Server
+
+	hookFilter hooks.Filter
 }
 
 func (agent *Agent) Run() error {
@@ -47,6 +44,7 @@ func (agent *Agent) Run() error {
 }
 
 func (agent *Agent) ProcessEvents() {
+	cache := hooks.NewCache(agent, time.Duration(10)*time.Second, agent.storage.Hooks())
 	eventChan, err := agent.containers.WatchEvents(agent, v1.EventContainerCreation, v1.EventContainerDeletion)
 	if err != nil {
 		context.GetLogger(agent).Panicf("error opening event channel: %v", err)
@@ -66,15 +64,22 @@ func (agent *Agent) ProcessEvents() {
 			continue
 		}
 
-		change := &v1.StateChange{
+		event.Container = c
+		allHooks := cache.Hooks()
+		for _, hook := range hooks.FilterAll(allHooks, c, agent.hookFilter) {
+			go agent.Notify(hook, event)
+		}
+
+		/*ch := &v1.StateChange{
 			State:     v1.StateFromEvent(event.Type),
 			Source:    event,
 			Container: c,
-		}
-
-		m := statechange.NewMessage(change)
-		go agent.pipeline.Send(agent, m)
+		}*/
 	}
+}
+
+func (agent *Agent) Notify(hook *v1.Hook, event *v1.ContainerEvent) {
+
 }
 
 func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
@@ -108,20 +113,13 @@ func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
 		log.Info("http api disabled")
 	}
 
-	filters := []pipeline.Filter{
-		logFilter.New(),
-		notHandledFilter.New(),
-	}
-
-	pipeline := pipeline.New(filters...)
-
 	return &Agent{
 		Context:    ctx,
 		config:     config,
 		containers: containersDriver,
 		storage:    storageDriver,
-		pipeline:   pipeline,
 		server:     server,
+		hookFilter: &hooks.CriteriaFilter{},
 	}, nil
 }
 

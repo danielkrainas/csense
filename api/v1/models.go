@@ -3,9 +3,6 @@ package v1
 import (
 	"encoding/json"
 	"net/http"
-	"time"
-
-	"github.com/danielkrainas/csense/shared/uuid"
 )
 
 type Operand string
@@ -53,20 +50,10 @@ type Hook struct {
 	Format   BodyFormat  `json:"format"`
 }
 
-func DefaultHook() *Hook {
-	return &Hook{
-		ID:      uuid.Generate(),
-		Events:  make([]EventType, 0),
-		TTL:     -1,
-		Created: time.Now().Unix(),
-		Format:  FormatJSON,
-	}
-}
-
 type Reaction struct {
-	Hook      *Hook
-	Host      *HostInfo
-	Container *ContainerInfo
+	Hook      *Hook          `json:"hook"`
+	Host      *HostInfo      `json:"host"`
+	Container *ContainerInfo `json:"container"`
 }
 
 type HostInfo struct {
@@ -74,12 +61,10 @@ type HostInfo struct {
 }
 
 type ContainerInfo struct {
-	*ContainerReference
-	Labels map[string]string `json:"labels"`
-}
-
-type ContainerReference struct {
-	Name string `json:"name"`
+	Name      string            `json:"name"`
+	ImageName string            `json:"image_name"`
+	ImageTag  string            `json:"image_tag"`
+	Labels    map[string]string `json:"labels"`
 }
 
 type StateChange struct {
@@ -89,9 +74,9 @@ type StateChange struct {
 }
 
 type ContainerEvent struct {
-	Type      ContainerEventType  `json:"type"`
-	Container *ContainerReference `json:""`
-	Timestamp int64               `json:"timestamp"`
+	Type      ContainerEventType `json:"type"`
+	Container *ContainerInfo     `json:"container"`
+	Timestamp int64              `json:"timestamp"`
 }
 
 type ContainerState string

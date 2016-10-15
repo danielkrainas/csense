@@ -100,12 +100,24 @@ func (d *driver) WatchEvents(ctx context.Context, types ...v1.ContainerEventType
 	return newEventChannel(cec), nil
 }
 
+func parseImageData(image string) (string, string) {
+	parts := strings.Split(image, ":")
+	if len(parts) < 2 {
+		return image, ""
+	} else if parts[1] == "" {
+		parts[1] = "latest"
+	}
+
+	return parts[0], parts[1]
+}
+
 func convertContainerInfo(info cadvisorV1.ContainerInfo) *v1.ContainerInfo {
+	imageName, imageTag := parseImageData(info.Spec.Image)
 	return &v1.ContainerInfo{
-		ContainerReference: &v1.ContainerReference{
-			Name: info.Name,
-		},
-		Labels: info.Labels,
+		Name:      info.Name,
+		ImageName: imageName,
+		ImageTag:  imageTag,
+		Labels:    info.Labels,
 	}
 }
 

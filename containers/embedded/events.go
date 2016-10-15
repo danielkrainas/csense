@@ -20,7 +20,7 @@ func newEventChannel(cec *events.EventChannel) *eventChannel {
 	go func() {
 		for src := range cec.GetChannel() {
 			e := &v1.ContainerEvent{
-				Container: &v1.ContainerReference{
+				Container: &v1.ContainerInfo{
 					Name: src.ContainerName,
 				},
 				Timestamp: src.Timestamp.Unix(),
