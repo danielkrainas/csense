@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/danielkrainas/csense/shared/uuid"
+	"github.com/danielkrainas/csense/uuid"
 )
 
 type Context interface {
