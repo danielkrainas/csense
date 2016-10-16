@@ -46,6 +46,10 @@ func (store *hookStore) Store(ctx context.Context, hook *v1.Hook) error {
 	store.mutex.Lock()
 	defer store.mutex.Unlock()
 
+	if store.idLookup == nil {
+		store.idLookup = map[string]*v1.Hook{}
+	}
+
 	if hook.ID == "" {
 		hook.ID = uuid.Generate()
 	}
