@@ -29,6 +29,7 @@ type Criteria struct {
 type BodyFormat string
 
 var (
+	FormatNone BodyFormat
 	FormatJSON BodyFormat = "json"
 )
 
@@ -47,6 +48,24 @@ type Hook struct {
 	Criteria *Criteria   `json:"criteria"`
 	TTL      int64       `json:"ttl"`
 	Created  int64       `json:"created"`
+	Format   BodyFormat  `json:"format"`
+}
+
+type ModifyHookRequest struct {
+	Name         string      `json:"name"`
+	Url          string      `json:"url"`
+	AddEvents    []EventType `json:"add_events"`
+	RemoveEvents []EventType `json:"remove_events"`
+	Criteria     *Criteria   `json:"criteria"`
+	Format       BodyFormat  `json:"format"`
+}
+
+type NewHookRequest struct {
+	Name     string      `json:"name"`
+	Url      string      `json:"url"`
+	Events   []EventType `json:"events"`
+	Criteria *Criteria   `json:"criteria"`
+	TTL      int64       `json:"ttl"`
 	Format   BodyFormat  `json:"format"`
 }
 

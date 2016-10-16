@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/handlers"
 
@@ -30,7 +33,7 @@ func hookDispatcher(ctx context.Context, r *http.Request) http.Handler {
 	return handlers.MethodHandler{
 		"GET":    http.HandlerFunc(h.GetHook),
 		"DELETE": http.HandlerFunc(h.DeleteHook),
-		"POST":   http.HandlerFunc(h.SaveHook),
+		"POST":   http.HandlerFunc(h.ModifyHook),
 	}
 }
 
@@ -52,15 +55,15 @@ func (ctx *hookHandler) DeleteHook(w http.ResponseWriter, r *http.Request) {
 	context.GetLogger(ctx).Debug("DeleteHook begin")
 	defer context.GetLogger(ctx).Debug("DeleteHook end")
 
-	key := context.GetStringValue(ctx, "vars.api_key")
-	err := storage.FromContext(ctx).Hooks().Delete(ctx, key)
+	hookID := context.GetStringValue(ctx, "vars.hook_id")
+	err := storage.FromContext(ctx).Hooks().Delete(ctx, hookID)
 	if err != nil {
 		context.GetLogger(ctx).Error(err)
 		ctx.Context = context.AppendError(ctx.Context, errcode.ErrorCodeUnknown.WithDetail(err))
 		return
 	}
 
-	context.GetLoggerWithField(ctx, "apikey", key).Info("api key deleted")
+	context.GetLoggerWithField(ctx, "hook.id", hookID).Info("hook deleted")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -68,28 +71,102 @@ func (ctx *hookHandler) CreateHook(w http.ResponseWriter, r *http.Request) {
 	context.GetLogger(ctx).Debug("CreateHook begin")
 	defer context.GetLogger(ctx).Debug("CreateHook end")
 
-	/*
-		err := storage.FromContext(ctx).Hooks().Store(ctx, hook)
-		if err != nil {
-			context.GetLogger(ctx).Error(err)
-			ctx.Context = context.AppendError(ctx.Context, errcode.ErrorCodeUnknown.WithDetail(err))
-			return
-		}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		context.GetLogger(ctx).Error(err)
+		ctx.Context = context.AppendError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
+		return
+	}
 
-		context.GetLoggerWithField(ctx, "hook.id", hook.ID).Info("hook created")
-		if err := v1.ServeJSON(w, hook); err != nil {
-			context.GetLogger(ctx).Errorf("error sending hook json: %v", err)
-		}
-	*/
+	hr := &v1.NewHookRequest{}
+	if err = json.Unmarshal(body, hr); err != nil {
+		context.GetLogger(ctx).Error(err)
+		ctx.Context = context.AppendError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
+		return
+	}
+
+	hook := &v1.Hook{
+		Created:  time.Now().Unix(),
+		Name:     hr.Name,
+		Criteria: hr.Criteria,
+		TTL:      hr.TTL,
+		Events:   hr.Events,
+		Format:   hr.Format,
+	}
+
+	if err := storage.FromContext(ctx).Hooks().Store(ctx, hook); err != nil {
+		context.GetLogger(ctx).Error(err)
+		ctx.Context = context.AppendError(ctx.Context, errcode.ErrorCodeUnknown.WithDetail(err))
+		return
+	}
+
+	context.GetLoggerWithField(ctx, "hook.id", hook.ID).Info("hook created")
+	if err := v1.ServeJSON(w, hook); err != nil {
+		context.GetLogger(ctx).Errorf("error sending hook json: %v", err)
+	}
 }
 
-func (ctx *hookHandler) SaveHook(w http.ResponseWriter, r *http.Request) {
-	context.GetLogger(ctx).Debug("SaveHook begin")
-	defer context.GetLogger(ctx).Debug("SaveHook end")
+func mergeHookUpdate(h *v1.Hook, r *v1.ModifyHookRequest) {
+	if r.Name != "" {
+		h.Name = r.Name
+	}
+
+	if r.Url != "" {
+		h.Url = r.Url
+	}
+
+	if r.Criteria != nil {
+		h.Criteria = r.Criteria
+	}
+
+	if r.Format != v1.FormatNone {
+		h.Format = r.Format
+	}
+
+	evlist := map[v1.EventType]bool{}
+	for _, e := range h.Events {
+		evlist[e] = true
+	}
+
+	for _, e := range r.AddEvents {
+		evlist[e] = true
+	}
+
+	for _, e := range r.RemoveEvents {
+		evlist[e] = false
+	}
+
+	results := make([]v1.EventType, 0)
+	for e, ok := range evlist {
+		if ok {
+			results = append(results, e)
+		}
+	}
+
+	h.Events = results
+}
+
+func (ctx *hookHandler) ModifyHook(w http.ResponseWriter, r *http.Request) {
+	context.GetLogger(ctx).Debug("ModifyHook begin")
+	defer context.GetLogger(ctx).Debug("ModifyHook end")
 
 	existing := ctx.Value("hook").(*v1.Hook)
-	err := storage.FromContext(ctx).Hooks().Store(ctx, existing)
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		context.GetLogger(ctx).Error(err)
+		ctx.Context = context.AppendError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
+		return
+	}
+
+	mr := &v1.ModifyHookRequest{}
+	if err = json.Unmarshal(body, mr); err != nil {
+		context.GetLogger(ctx).Error(err)
+		ctx.Context = context.AppendError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
+		return
+	}
+
+	mergeHookUpdate(existing, mr)
+	if err := storage.FromContext(ctx).Hooks().Store(ctx, existing); err != nil {
 		context.GetLogger(ctx).Error(err)
 		ctx.Context = context.AppendError(ctx.Context, errcode.ErrorCodeUnknown.WithDetail(err))
 		return
