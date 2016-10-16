@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	IDRegex = regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[1][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`)
+	IDRegex = regexp.MustCompile(`(?i)[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}`)
 
 	versionHeader = describe.Parameter{
 		Name:        "cSense-API-Version",
