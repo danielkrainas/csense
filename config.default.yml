@@ -16,4 +16,4 @@ http:
 
 containers: 'embedded'
 
-storage: 'memory'
+storage: 'inmemory'

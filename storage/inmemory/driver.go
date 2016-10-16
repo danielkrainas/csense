@@ -1,4 +1,4 @@
-package memory
+package inmemory
 
 import (
 	"github.com/danielkrainas/csense/context"
@@ -15,7 +15,7 @@ func (d *Factory) Create(parameters map[string]interface{}) (storage.Driver, err
 }
 
 func init() {
-	factory.Register("memory", &Factory{})
+	factory.Register("inmemory", &Factory{})
 }
 
 type Driver struct {

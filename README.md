@@ -26,7 +26,7 @@ All configuration environment variables are prefixed by `CSENSE_` and the paths 
 
 - `CSENSE_LOGGING_LEVEL=warn`
 - `CSENSE_HTTP_ADDR=localhost:2345`
-- `CSENSE_STORAGE_MOCK=true`
+- `CSENSE_STORAGE_INMEMORY=true`
 - `CSENSE_STORAGE_CONSUL_PARAM1=val`
 
 A development configuration file is included: `/config.dev.yml` and a `/config.local.yml` has already been added to gitignore to be used for local testing or development.
@@ -66,8 +66,8 @@ storage:
   consul:
     param1: 'val'
 
-# the mock driver has no parameters so it can be declared as a string
-storage: 'mock'
+# the in-memory driver has no parameters so it can be declared as a string
+storage: 'inmemory'
 ```
 
 `storage` only allows specification of *one* driver per configuration. Any additional ones will cause a validation error when the application starts.
