@@ -51,6 +51,7 @@ type Hook struct {
 }
 
 type Reaction struct {
+	Timestamp int64          `json:"timestamp"`
 	Hook      *Hook          `json:"hook"`
 	Host      *HostInfo      `json:"host"`
 	Container *ContainerInfo `json:"container"`

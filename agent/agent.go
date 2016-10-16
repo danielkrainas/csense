@@ -2,6 +2,7 @@ package agent
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -29,6 +30,8 @@ type Agent struct {
 	server *server.Server
 
 	hookFilter hooks.Filter
+
+	shooter hooks.Shooter
 }
 
 func (agent *Agent) Run() error {
@@ -43,7 +46,15 @@ func (agent *Agent) Run() error {
 	return nil
 }
 
+func (agent *Agent) getHostInfo() *v1.HostInfo {
+	hostname, _ := os.Hostname()
+	return &v1.HostInfo{
+		Hostname: hostname,
+	}
+}
+
 func (agent *Agent) ProcessEvents() {
+	host := agent.getHostInfo()
 	cache := hooks.NewCache(agent, time.Duration(10)*time.Second, agent.storage.Hooks())
 	eventChan, err := agent.containers.WatchEvents(agent, v1.EventContainerCreation, v1.EventContainerDeletion)
 	if err != nil {
@@ -67,19 +78,20 @@ func (agent *Agent) ProcessEvents() {
 		event.Container = c
 		allHooks := cache.Hooks()
 		for _, hook := range hooks.FilterAll(allHooks, c, agent.hookFilter) {
-			go agent.Notify(hook, event)
+			r := &v1.Reaction{
+				Container: c,
+				Hook:      hook,
+				Host:      host,
+				Timestamp: time.Now().Unix(),
+			}
+
+			go func() {
+				if err := agent.shooter.Fire(agent, r); err != nil {
+					context.GetLoggerWithField(agent, "hook.id", hook.ID).Errorf("error firing hook: %v", err)
+				}
+			}()
 		}
-
-		/*ch := &v1.StateChange{
-			State:     v1.StateFromEvent(event.Type),
-			Source:    event,
-			Container: c,
-		}*/
 	}
-}
-
-func (agent *Agent) Notify(hook *v1.Hook, event *v1.ContainerEvent) {
-
 }
 
 func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
@@ -120,6 +132,7 @@ func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
 		storage:    storageDriver,
 		server:     server,
 		hookFilter: &hooks.CriteriaFilter{},
+		shooter:    &hooks.MockShooter{},
 	}, nil
 }
 
