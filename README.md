@@ -1,6 +1,6 @@
 # cSense
 
-[![Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg?style=flat)](License)
+[![Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg?style=flat)](License) [![Report Card](https://goreportcard.com/badge/github.com/danielkrainas/csense)](goreportcard)
 
 ![cSense logo](https://github.com/danielkrainas/csense/blob/master/docs/logo/csense-logo.png)
 
