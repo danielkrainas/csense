@@ -72,11 +72,46 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/boltdb/bolt",
+			"repository": "https://github.com/boltdb/bolt",
+			"vcs": "git",
+			"revision": "074dffcc83e9f421e261526d297cd93f22a34080",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/cloudfoundry-incubator/candiedyaml",
 			"repository": "https://github.com/cloudfoundry-incubator/candiedyaml",
 			"vcs": "git",
 			"revision": "99c3df83b51532e3615f851d8c2dbb638f5313bf",
 			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/coreos/etcd/client",
+			"repository": "https://github.com/coreos/etcd",
+			"vcs": "git",
+			"revision": "cc96f91156ed35caaf57ed987b4e9f75d142813a",
+			"branch": "master",
+			"path": "/client",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/coreos/etcd/pkg/pathutil",
+			"repository": "https://github.com/coreos/etcd",
+			"vcs": "git",
+			"revision": "cc96f91156ed35caaf57ed987b4e9f75d142813a",
+			"branch": "master",
+			"path": "pkg/pathutil",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/coreos/etcd/pkg/types",
+			"repository": "https://github.com/coreos/etcd",
+			"vcs": "git",
+			"revision": "cc96f91156ed35caaf57ed987b4e9f75d142813a",
+			"branch": "master",
+			"path": "pkg/types",
 			"notests": true
 		},
 		{
@@ -218,6 +253,14 @@
 			"repository": "https://github.com/docker/go-units",
 			"vcs": "git",
 			"revision": "f2145db703495b2e525c59662db69a7344b00bb8",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/docker/libkv",
+			"repository": "https://github.com/docker/libkv",
+			"vcs": "git",
+			"revision": "3fce6a0f26e07da3eac45796a8e255547a47a750",
 			"branch": "master",
 			"notests": true
 		},
@@ -405,6 +448,33 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/hashicorp/consul/api",
+			"repository": "https://github.com/hashicorp/consul",
+			"vcs": "git",
+			"revision": "41f1764434246ba7ee91625fb9a23d94ae6d6e19",
+			"branch": "master",
+			"path": "/api",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/hashicorp/consul/vendor/github.com/hashicorp/go-cleanhttp",
+			"repository": "https://github.com/hashicorp/consul",
+			"vcs": "git",
+			"revision": "41f1764434246ba7ee91625fb9a23d94ae6d6e19",
+			"branch": "master",
+			"path": "vendor/github.com/hashicorp/go-cleanhttp",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/hashicorp/consul/vendor/github.com/hashicorp/serf/coordinate",
+			"repository": "https://github.com/hashicorp/consul",
+			"vcs": "git",
+			"revision": "41f1764434246ba7ee91625fb9a23d94ae6d6e19",
+			"branch": "master",
+			"path": "vendor/github.com/hashicorp/serf/coordinate",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/hashicorp/hcl",
 			"repository": "https://github.com/hashicorp/hcl",
 			"vcs": "git",
@@ -519,6 +589,15 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/samuel/go-zookeeper/zk",
+			"repository": "https://github.com/samuel/go-zookeeper",
+			"vcs": "git",
+			"revision": "87e1bca4477a3cc767ca71be023ced183d74e538",
+			"branch": "master",
+			"path": "/zk",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/satori/go.uuid",
 			"repository": "https://github.com/satori/go.uuid",
 			"vcs": "git",
@@ -615,6 +694,15 @@
 			"revision": "2c00daeb6c3b45114c80ac44119e7b8801fdd852",
 			"branch": "master",
 			"path": "/capability",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/ugorji/go/codec",
+			"repository": "https://github.com/ugorji/go",
+			"vcs": "git",
+			"revision": "faddd6128c66c4708f45fdc007f575f75e592a3c",
+			"branch": "master",
+			"path": "/codec",
 			"notests": true
 		},
 		{
