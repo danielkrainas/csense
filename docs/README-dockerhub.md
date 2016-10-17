@@ -2,7 +2,7 @@
 
 ![cSense logo](https://raw.githubusercontent.com/danielkrainas/csense/master/docs/logo/csense-logo.png)
 
-cSense (Container Sense) allows you to create web hooks for when a container is created or exits. A web hook can have selectors for things like image name and metadata labels.
+cSense (Container Sense) allows you to subscribe to container events with web hooks. Hooks are registered with cSense via an HTTP API and may contain selectors, like image tag or container name, to limit the containers or events that the hook should be notified about.
 
 For more information, see the [project site.](https://github.com/danielkrainas/csense)
 
