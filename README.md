@@ -4,13 +4,21 @@
 
 ![cSense logo](https://github.com/danielkrainas/csense/blob/master/docs/logo/csense-logo.png)
 
-cSense (Container Sense) allows you to create web hooks for when a container is created or exits. A web hook can have selectors for things like image name and metadata labels.
+cSense (Container Sense) allows you to subscribe to container events with web hooks. Hooks are registered with cSense via an HTTP API and may contain selectors, like image tag or container name, to limit the containers or events that the hook should be notified about.
 
 ## Installation
 
 > $ go get github.com/danielkrainas/csense
 
 ## Usage
+
+> $ csense [command] <config_path>
+
+Most commands require a configuration path provided as an argument or in the `CSENSE_CONFIG_PATH` environment variable. 
+
+### Agent mode
+
+This mode hosts the HTTP API server and handles monitoring and notifying hooks of container events.
 
 > $ csense agent <config_path>
 
