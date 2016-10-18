@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/danielkrainas/csense/api/client"
 	"github.com/danielkrainas/csense/api/v1"
@@ -27,6 +26,21 @@ func main() {
 
 	// Create a hook
 	//=====================================
+	err = c.Hooks().CreateHook(&v1.NewHookRequest{
+		Name:   "Foo Hook",
+		TTL:    0,
+		Url:    "http://localhost:9181/v1",
+		Format: v1.FormatJSON,
+		Events: []v1.EventType{v1.EventCreate},
+		Criteria: &v1.Criteria{
+			ImageName: &v1.Condition{
+				Op:    v1.OperandEqual,
+				Value: "registry",
+			},
+		},
+	})
 
-	// TODO: add "create hook" example
+	if err != nil {
+		panic("error creating hook")
+	}
 }

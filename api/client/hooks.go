@@ -31,7 +31,7 @@ func (c *hooksAPI) CreateHook(hr *v1.NewHookRequest) error {
 		return err
 	}
 
-	r, err := http.NewRequest(http.MethodPost, urlStr, bytes.NewBuffer(body))
+	r, err := http.NewRequest(http.MethodPut, urlStr, bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
