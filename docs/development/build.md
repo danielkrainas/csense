@@ -1,5 +1,6 @@
-# Build cSense and Running Tests
+![cSense logo](https://github.com/danielkrainas/csense/blob/master/docs/logo/csense-logo.png)
 
+# Build and Run Tests
 
 ## Building 
 
