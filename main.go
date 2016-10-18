@@ -13,6 +13,7 @@ import (
 	_ "github.com/danielkrainas/csense/containers/embedded"
 	"github.com/danielkrainas/csense/context"
 	_ "github.com/danielkrainas/csense/storage/consul"
+	_ "github.com/danielkrainas/csense/storage/etcd"
 	_ "github.com/danielkrainas/csense/storage/inmemory"
 )
 
