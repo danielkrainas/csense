@@ -20,7 +20,7 @@ type Client struct {
 func New(endpoint string, httpClient *http.Client) *Client {
 	return &Client{
 		Endpoint:   endpoint,
-		HttpClient: httpClient,
+		HTTPClient: httpClient,
 	}
 }
 
@@ -63,5 +63,5 @@ func (c *Client) Ping() error {
 
 func (c *Client) do(r *http.Request) (*http.Response, error) {
 	r.Header.Add("USER-AGENT", CLIENT_USER_AGENT)
-	return c.HttpClient.Do(r)
+	return c.HTTPClient.Do(r)
 }

@@ -80,6 +80,17 @@ func (ub *URLBuilder) BuildBaseURL() (string, error) {
 	return baseURL.String(), nil
 }
 
+func (ub *URLBuilder) BuildHooks() (string, error) {
+	route := ub.cloneRoute(RouteNameHooks)
+
+	routeUrl, err := route.URL()
+	if err != nil {
+		return "", err
+	}
+
+	return routeUrl.String(), nil
+}
+
 type clonedRoute struct {
 	*mux.Route
 
