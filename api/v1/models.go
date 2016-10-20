@@ -29,8 +29,9 @@ type Criteria struct {
 type BodyFormat string
 
 var (
-	FormatNone BodyFormat
-	FormatJSON BodyFormat = "json"
+	FormatNone      BodyFormat
+	FormatJSON      BodyFormat = "json"
+	FormatSlackJSON BodyFormat = "json+slack"
 )
 
 type EventType string
