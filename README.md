@@ -6,6 +6,11 @@
 
 cSense (Container Sense) allows you to subscribe to container events with web hooks. Hooks are registered with cSense via an HTTP API and may contain selectors, like image tag or container name, to limit the containers or events that the hook should be notified about.
 
+Supported storage backends:
+- Etcd3
+- Consul
+- In-memory
+
 ## Installation
 
 > $ go get github.com/danielkrainas/csense
