@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 
 	log "github.com/Sirupsen/logrus"
-	ghandlers "github.com/gorilla/handlers"
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
 
@@ -30,7 +28,8 @@ func New(ctx context.Context, config *configuration.Config) (*Server, error) {
 
 	handler := alive("/", app)
 	handler = panicHandler(handler)
-	handler = ghandlers.CombinedLoggingHandler(os.Stdout, handler)
+	handler = contextHandler(app, handler)
+	handler = loggingHandler(app, handler)
 
 	n := negroni.New()
 
@@ -87,6 +86,23 @@ func alive(path string, handler http.Handler) http.Handler {
 			return
 		}
 
+		handler.ServeHTTP(w, r)
+	})
+}
+
+func contextHandler(parent context.Context, handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.DefaultContextManager.Context(parent, w, r)
+		defer context.DefaultContextManager.Release(ctx)
+
+		handler.ServeHTTP(w, r)
+	})
+}
+
+func loggingHandler(parent context.Context, handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.DefaultContextManager.Context(parent, w, r)
+		context.GetRequestLogger(ctx).Info("request started")
 		handler.ServeHTTP(w, r)
 	})
 }

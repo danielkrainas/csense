@@ -182,7 +182,6 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	ctx := context.DefaultContextManager.Context(app, w, r)
-	defer context.DefaultContextManager.Release(ctx)
 	defer func() {
 		status, ok := ctx.Value("http.response.status").(int)
 		if ok && status >= 200 && status <= 399 {
