@@ -11,6 +11,7 @@ import (
 	cadvisorMetrics "github.com/google/cadvisor/container"
 	"github.com/google/cadvisor/events"
 	cadvisorV1 "github.com/google/cadvisor/info/v1"
+	cadvisorV2 "github.com/google/cadvisor/info/v2"
 	"github.com/google/cadvisor/manager"
 	"github.com/google/cadvisor/utils/sysfs"
 
@@ -121,6 +122,16 @@ func convertContainerInfo(info cadvisorV1.ContainerInfo) *v1.ContainerInfo {
 	}
 }
 
+func convertContainerSpec(name string, spec cadvisorV2.ContainerSpec) *v1.ContainerInfo {
+	imageName, imageTag := parseImageData(spec.Image)
+	return &v1.ContainerInfo{
+		Name:      name,
+		ImageName: imageName,
+		ImageTag:  imageTag,
+		Labels:    spec.Labels,
+	}
+}
+
 func (d *driver) GetContainers(ctx context.Context) ([]*v1.ContainerInfo, error) {
 	q := &cadvisorV1.ContainerInfoRequest{}
 	rawContainers, err := d.manager.AllDockerContainers(q)
@@ -137,8 +148,12 @@ func (d *driver) GetContainers(ctx context.Context) ([]*v1.ContainerInfo, error)
 }
 
 func (d *driver) GetContainer(ctx context.Context, name string) (*v1.ContainerInfo, error) {
-	r := &cadvisorV1.ContainerInfoRequest{NumStats: 0}
-	info, err := d.manager.GetContainerInfo(name, r)
+	specMap, err := d.manager.GetContainerSpec(name, cadvisorV2.RequestOptions{
+		IdType:    "name",
+		Count:     0,
+		Recursive: false,
+	})
+
 	if err != nil {
 		if strings.Contains(err.Error(), "unable to find data for container") {
 			return nil, containers.ErrContainerNotFound
@@ -147,5 +162,5 @@ func (d *driver) GetContainer(ctx context.Context, name string) (*v1.ContainerIn
 		return nil, err
 	}
 
-	return convertContainerInfo(*info), nil
+	return convertContainerSpec(name, specMap[name]), nil
 }
