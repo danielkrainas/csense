@@ -92,6 +92,7 @@ func (ctx *hookHandler) CreateHook(w http.ResponseWriter, r *http.Request) {
 		TTL:      hr.TTL,
 		Events:   hr.Events,
 		Format:   hr.Format,
+		Url:      hr.Url,
 	}
 
 	if err := storage.FromContext(ctx).Hooks().Store(ctx, hook); err != nil {
