@@ -1,6 +1,7 @@
 package hooks
 
 import (
+	"regexp"
 	"sync"
 	"time"
 
@@ -17,7 +18,37 @@ type Filter interface {
 type CriteriaFilter struct{}
 
 func (f *CriteriaFilter) Match(hook *v1.Hook, c *v1.ContainerInfo) bool {
-	return true
+	crit := hook.Criteria
+
+	if c.Name != "" && IsValid(crit.Name, c.Name) {
+		return true
+	}
+
+	if c.ImageName != "" && IsValid(crit.ImageName, c.ImageName) {
+		return true
+	}
+
+	for k, v := range c.Labels {
+		if x, ok := c.Labels[k]; ok && x == v {
+			return true
+		}
+	}
+
+	return false
+}
+
+func IsValid(c *v1.Condition, v string) bool {
+	switch c.Op {
+	case v1.OperandEqual:
+		return c.Value == v
+	case v1.OperandNotEqual:
+		return c.Value != v
+	case v1.OperandMatch:
+		ok, err := regexp.MatchString(c.Value, v)
+		return err == nil && ok
+	}
+
+	return false
 }
 
 func DefaultHook() *v1.Hook {
