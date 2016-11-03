@@ -20,8 +20,8 @@ func hookListDispatcher(ctx context.Context, r *http.Request) http.Handler {
 	}
 
 	return handlers.MethodHandler{
-		"GET": http.HandlerFunc(h.GetAllHooks),
-		"PUT": http.HandlerFunc(h.CreateHook),
+		"GET":  http.HandlerFunc(h.GetAllHooks),
+		"POST": http.HandlerFunc(h.CreateHook),
 	}
 }
 
@@ -33,7 +33,7 @@ func hookDispatcher(ctx context.Context, r *http.Request) http.Handler {
 	return handlers.MethodHandler{
 		"GET":    http.HandlerFunc(h.GetHook),
 		"DELETE": http.HandlerFunc(h.DeleteHook),
-		"POST":   http.HandlerFunc(h.ModifyHook),
+		"PUT":    http.HandlerFunc(h.ModifyHook),
 	}
 }
 
