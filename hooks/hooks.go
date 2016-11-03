@@ -20,12 +20,18 @@ type CriteriaFilter struct{}
 func (f *CriteriaFilter) Match(hook *v1.Hook, c *v1.ContainerInfo) bool {
 	crit := hook.Criteria
 
-	if c.Name != "" && IsValid(crit.Name, c.Name) {
-		return true
-	}
+	for fieldName, condition := range crit.Fields {
+		valid := false
+		switch fieldName {
+		case v1.FieldName:
+			valid = IsValid(condition, c.Name)
+		case v1.FieldImageName:
+			valid = IsValid(condition, c.ImageName)
+		}
 
-	if c.ImageName != "" && IsValid(crit.ImageName, c.ImageName) {
-		return true
+		if valid {
+			return valid
+		}
 	}
 
 	for k, v := range c.Labels {
