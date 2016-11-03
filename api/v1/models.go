@@ -21,8 +21,6 @@ type Condition struct {
 type Criteria struct {
 	Name      *Condition        `json:"name,omitempty"`
 	ImageName *Condition        `json:"image_name,omitempty"`
-	Created   bool              `json:"created,omitempty"`
-	Deleted   bool              `json:"deleted,omitempty"`
 	Labels    map[string]string `json:"labels,omitempty"`
 }
 
