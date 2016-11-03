@@ -11,9 +11,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
 
-	//"github.com/danielkrainas/csense/api/errcode"
 	"github.com/danielkrainas/csense/api/server/handlers"
-	//"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/configuration"
 	"github.com/danielkrainas/csense/context"
 )
