@@ -8,9 +8,11 @@ import (
 type Operand string
 
 var (
-	OperandEqual    Operand = "equal"
-	OperandNotEqual Operand = "not_equal"
-	OperandMatch    Operand = "match"
+	OperandEqual         Operand = "equal"
+	OperandEqualShort    Operand = "eq"
+	OperandNotEqual      Operand = "not_equal"
+	OperandNotEqualShort Operand = "ne"
+	OperandMatch         Operand = "match"
 )
 
 type Condition struct {

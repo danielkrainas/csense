@@ -49,10 +49,14 @@ func IsValid(c *v1.Condition, v string) bool {
 	}
 
 	switch c.Op {
+	case v1.OperandEqualShort:
 	case v1.OperandEqual:
 		return c.Value == v
+
+	case v1.OperandNotEqualShort:
 	case v1.OperandNotEqual:
 		return c.Value != v
+
 	case v1.OperandMatch:
 		ok, err := regexp.MatchString(c.Value, v)
 		return err == nil && ok
