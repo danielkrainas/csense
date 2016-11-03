@@ -22,9 +22,9 @@ This is the primary mode for cSense. It hosts the HTTP API server and handles mo
 
 > $ csense agent <config_path>
 
-**Example** - with development config:
+**Example** - with the default config:
 
-> $ csense agent ./config.dev.yml
+> $ csense agent ./config.default.yml
 
 ## Configuration
 
