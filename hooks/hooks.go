@@ -38,6 +38,10 @@ func (f *CriteriaFilter) Match(hook *v1.Hook, c *v1.ContainerInfo) bool {
 }
 
 func IsValid(c *v1.Condition, v string) bool {
+	if c == nil {
+		return false
+	}
+
 	switch c.Op {
 	case v1.OperandEqual:
 		return c.Value == v
