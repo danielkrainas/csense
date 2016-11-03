@@ -19,10 +19,16 @@ type Condition struct {
 }
 
 type Criteria struct {
-	Name      *Condition        `json:"name,omitempty"`
-	ImageName *Condition        `json:"image_name,omitempty"`
-	Labels    map[string]string `json:"labels,omitempty"`
+	Fields map[ContainerField]*Condition
+	Labels map[string]string `json:"labels,omitempty"`
 }
+
+type ContainerField string
+
+var (
+	FieldName      ContainerField = "name"
+	FieldImageName ContainerField = "image_name"
+)
 
 type BodyFormat string
 
