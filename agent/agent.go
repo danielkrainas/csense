@@ -2,6 +2,7 @@ package agent
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -132,7 +133,7 @@ func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
 		storage:    storageDriver,
 		server:     server,
 		hookFilter: &hooks.CriteriaFilter{},
-		shooter:    &hooks.MockShooter{},
+		shooter:    &hooks.LiveShooter{http.DefaultClient},
 	}, nil
 }
 
