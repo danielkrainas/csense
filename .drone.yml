@@ -1,0 +1,9 @@
+workspace:
+  base: /go
+  path: src/github.com/danielkrainas/csense
+
+pipeline:
+  build:
+    image: golang:latest
+    commands:
+      - make dist
