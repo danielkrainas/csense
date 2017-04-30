@@ -1,6 +1,7 @@
 package embedded
 
 import (
+	"context"
 	"flag"
 	"net/http"
 	"strings"
@@ -18,7 +19,6 @@ import (
 	"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/containers"
 	"github.com/danielkrainas/csense/containers/factory"
-	"github.com/danielkrainas/csense/context"
 )
 
 var parseOnce sync.Once
@@ -43,10 +43,7 @@ func (factory *driverFactory) Create(parameters map[string]interface{}) (contain
 		})
 	}
 
-	sysFs, err := sysfs.NewRealSysFs()
-	if err != nil {
-		return nil, err
-	}
+	sysFs := sysfs.NewRealSysFs()
 
 	// Create and start the cAdvisor container manager.
 	m, err := manager.New(memory.New(statsCacheDuration, nil), sysFs, maxHousekeepingInterval, allowDynamicHousekeeping, cadvisorMetrics.MetricSet{cadvisorMetrics.NetworkTcpUsageMetrics: struct{}{}}, http.DefaultClient)

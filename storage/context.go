@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/danielkrainas/csense/context"
+	"context"
 )
 
 func ForContext(ctx context.Context, driver Driver) context.Context {

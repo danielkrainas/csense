@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 
 	"github.com/danielkrainas/csense/api/server/handlers"
 	"github.com/danielkrainas/csense/configuration"
-	"github.com/danielkrainas/csense/context"
+	"github.com/danielkrainas/gobag/context"
 )
 
 type Server struct {
@@ -62,7 +63,7 @@ func (server *Server) ListenAndServe() error {
 		return err
 	}
 
-	context.GetLogger(server.app).Infof("listening on %v", ln.Addr())
+	acontext.GetLogger(server.app).Infof("listening on %v", ln.Addr())
 	return server.server.Serve(ln)
 }
 
@@ -92,8 +93,8 @@ func alive(path string, handler http.Handler) http.Handler {
 
 func contextHandler(parent context.Context, handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.DefaultContextManager.Context(parent, w, r)
-		defer context.DefaultContextManager.Release(ctx)
+		ctx := acontext.DefaultContextManager.Context(parent, w, r)
+		defer acontext.DefaultContextManager.Release(ctx)
 
 		handler.ServeHTTP(w, r)
 	})
@@ -101,8 +102,8 @@ func contextHandler(parent context.Context, handler http.Handler) http.Handler {
 
 func loggingHandler(parent context.Context, handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.DefaultContextManager.Context(parent, w, r)
-		context.GetRequestLogger(ctx).Info("request started")
+		ctx := acontext.DefaultContextManager.Context(parent, w, r)
+		acontext.GetRequestLogger(ctx).Info("request started")
 		handler.ServeHTTP(w, r)
 	})
 }

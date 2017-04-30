@@ -1,14 +1,16 @@
 package hooks
 
 import (
+	"context"
 	"regexp"
 	"sync"
 	"time"
 
+	"github.com/danielkrainas/gobag/context"
+	"github.com/danielkrainas/gobag/util/uuid"
+
 	"github.com/danielkrainas/csense/api/v1"
-	"github.com/danielkrainas/csense/context"
 	"github.com/danielkrainas/csense/storage"
-	"github.com/danielkrainas/csense/uuid"
 )
 
 type Filter interface {
@@ -109,7 +111,7 @@ func NewCache(ctx context.Context, d time.Duration, store storage.HookStore) *Ca
 			<-c.ticker.C
 			hooks, err := store.GetAll(ctx)
 			if err != nil {
-				context.GetLogger(ctx).Warnf("error caching hooks: %v", err)
+				acontext.GetLogger(ctx).Warnf("error caching hooks: %v", err)
 				continue
 			}
 

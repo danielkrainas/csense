@@ -1,7 +1,7 @@
 package root
 
 import (
-	"github.com/danielkrainas/csense/cmd"
+	"github.com/danielkrainas/gobag/cmd"
 )
 
 var Info = &cmd.Info{

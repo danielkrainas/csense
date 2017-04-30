@@ -1,10 +1,12 @@
 package agent
 
 import (
+	"context"
+
+	"github.com/danielkrainas/gobag/cmd"
+
 	"github.com/danielkrainas/csense/agent"
-	"github.com/danielkrainas/csense/cmd"
 	"github.com/danielkrainas/csense/configuration"
-	"github.com/danielkrainas/csense/context"
 )
 
 func init() {

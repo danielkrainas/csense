@@ -1,22 +1,25 @@
 package agent
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	cfg "github.com/danielkrainas/gobag/configuration"
+	"github.com/danielkrainas/gobag/context"
 
 	"github.com/danielkrainas/csense/api/server"
 	"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/configuration"
 	"github.com/danielkrainas/csense/containers"
 	containersFactory "github.com/danielkrainas/csense/containers/factory"
-	"github.com/danielkrainas/csense/context"
 	"github.com/danielkrainas/csense/hooks"
 	"github.com/danielkrainas/csense/storage"
-	storageDriverFactory "github.com/danielkrainas/csense/storage/factory"
+	storageDriverFactory "github.com/danielkrainas/csense/storage/driver/factory"
+	storageLoader "github.com/danielkrainas/csense/storage/loader"
 )
 
 type Agent struct {
@@ -36,8 +39,8 @@ type Agent struct {
 }
 
 func (agent *Agent) Run() error {
-	context.GetLogger(agent).Info("starting agent")
-	defer context.GetLogger(agent).Info("shutting down agent")
+	acontext.GetLogger(agent).Info("starting agent")
+	defer acontext.GetLogger(agent).Info("shutting down agent")
 
 	if agent.config.HTTP.Enabled {
 		go agent.server.ListenAndServe()
@@ -59,18 +62,18 @@ func (agent *Agent) ProcessEvents() {
 	cache := hooks.NewCache(agent, time.Duration(10)*time.Second, agent.storage.Hooks())
 	eventChan, err := agent.containers.WatchEvents(agent, v1.EventContainerCreation, v1.EventContainerDeletion)
 	if err != nil {
-		context.GetLogger(agent).Panicf("error opening event channel: %v", err)
+		acontext.GetLogger(agent).Panicf("error opening event channel: %v", err)
 	}
 
-	context.GetLogger(agent).Info("event monitor started")
-	defer context.GetLogger(agent).Info("event monitor stopped")
+	acontext.GetLogger(agent).Info("event monitor started")
+	defer acontext.GetLogger(agent).Info("event monitor stopped")
 	for event := range eventChan.GetChannel() {
 		c, err := agent.containers.GetContainer(agent, event.Container.Name)
 		if err != nil {
 			if err == containers.ErrContainerNotFound {
-				context.GetLogger(agent).Warnf("event container info for %q not available", event.Container.Name)
+				acontext.GetLogger(agent).Warnf("event container info for %q not available", event.Container.Name)
 			} else {
-				context.GetLogger(agent).Errorf("error getting event container info: %v", err)
+				acontext.GetLogger(agent).Errorf("error getting event container info: %v", err)
 			}
 
 			continue
@@ -88,7 +91,7 @@ func (agent *Agent) ProcessEvents() {
 
 			go func() {
 				if err := agent.shooter.Fire(agent, r); err != nil {
-					context.GetLoggerWithField(agent, "hook.id", hook.ID).Errorf("error firing hook: %v", err)
+					acontext.GetLoggerWithField(agent, "hook.id", hook.ID).Errorf("error firing hook: %v", err)
 				}
 			}()
 		}
@@ -101,7 +104,7 @@ func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
 		return nil, fmt.Errorf("error configuring logging: %v", err)
 	}
 
-	log := context.GetLogger(ctx)
+	log := acontext.GetLogger(ctx)
 	log.Info("initializing agent")
 
 	ctx, containersDriver, err := configureContainers(ctx, config)
@@ -121,7 +124,7 @@ func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
 
 	log.Infof("using %q logging formatter", config.Log.Formatter)
 	log.Infof("using %q containers driver", config.Containers.Type())
-	log.Infof("using %q storage driver", config.Storage.Type())
+	storageLoader.LogSummary(ctx, config)
 	if !config.HTTP.Enabled {
 		log.Info("http api disabled")
 	}
@@ -140,7 +143,7 @@ func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
 func configureContainers(ctx context.Context, config *configuration.Config) (context.Context, containers.Driver, error) {
 	containersParams := config.Containers.Parameters()
 	if containersParams == nil {
-		containersParams = make(configuration.Parameters)
+		containersParams = make(cfg.Parameters)
 	}
 
 	containersDriver, err := containersFactory.Create(config.Containers.Type(), containersParams)
@@ -154,7 +157,7 @@ func configureContainers(ctx context.Context, config *configuration.Config) (con
 func configureStorage(ctx context.Context, config *configuration.Config) (context.Context, storage.Driver, error) {
 	storageParams := config.Storage.Parameters()
 	if storageParams == nil {
-		storageParams = make(configuration.Parameters)
+		storageParams = make(cfg.Parameters)
 	}
 
 	storageDriver, err := storageDriverFactory.Create(config.Storage.Type(), storageParams)
@@ -199,15 +202,15 @@ func configureLogging(ctx context.Context, config *configuration.Config) (contex
 			fields = append(fields, k)
 		}
 
-		ctx = context.WithValues(ctx, config.Log.Fields)
-		ctx = context.WithLogger(ctx, context.GetLogger(ctx, fields...))
+		ctx = acontext.WithValues(ctx, config.Log.Fields)
+		ctx = acontext.WithLogger(ctx, acontext.GetLogger(ctx, fields...))
 	}
 
-	ctx = context.WithLogger(ctx, context.GetLogger(ctx))
+	ctx = acontext.WithLogger(ctx, acontext.GetLogger(ctx))
 	return ctx, nil
 }
 
-func logLevel(level configuration.LogLevel) log.Level {
+func logLevel(level cfg.LogLevel) log.Level {
 	l, err := log.ParseLevel(string(level))
 	if err != nil {
 		l = log.InfoLevel

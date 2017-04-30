@@ -1,15 +1,16 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
+	"github.com/danielkrainas/gobag/api/errcode"
+	"github.com/danielkrainas/gobag/context"
 	"github.com/gorilla/mux"
 
-	"github.com/danielkrainas/csense/api/errcode"
 	"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/configuration"
-	"github.com/danielkrainas/csense/context"
 	"github.com/danielkrainas/csense/storage"
 )
 
@@ -85,8 +86,8 @@ func (app *App) hookRequired(ctx context.Context, r *http.Request) bool {
 }
 
 func (app *App) loadHook(ctx *appRequestContext, r *http.Request) error {
-	hookID := context.GetStringValue(ctx, "vars.hook_id")
-	ctx.Context = context.WithLogger(ctx.Context, context.GetLoggerWithField(ctx.Context, "hook.id", hookID))
+	hookID := acontext.GetStringValue(ctx, "vars.hook_id")
+	ctx.Context = acontext.WithLogger(ctx.Context, acontext.GetLoggerWithField(ctx.Context, "hook.id", hookID))
 
 	hook, err := storage.FromContext(app).Hooks().GetByID(ctx, hookID)
 	if err != nil {
@@ -100,21 +101,21 @@ func (app *App) loadHook(ctx *appRequestContext, r *http.Request) error {
 func (app *App) dispatcher(dispatch dispatchFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := app.context(w, r)
-		ctx.Context = context.WithErrors(ctx.Context, make(errcode.Errors, 0))
+		ctx.Context = acontext.WithErrors(ctx.Context, make(errcode.Errors, 0))
 
 		if app.hookRequired(ctx, r) {
 			err := app.loadHook(ctx, r)
 			if err != nil {
-				context.GetLogger(ctx).Errorf("error loading hook for context: %v", err)
+				acontext.GetLogger(ctx).Errorf("error loading hook for context: %v", err)
 				if err == storage.ErrNotFound {
-					ctx.Context = context.AppendError(ctx.Context, v1.ErrorCodeHookUnknown)
+					ctx.Context = acontext.AppendError(ctx.Context, v1.ErrorCodeHookUnknown)
 				} else {
-					ctx.Context = context.AppendError(ctx.Context, errcode.ErrorCodeUnknown.WithDetail(err))
+					ctx.Context = acontext.AppendError(ctx.Context, errcode.ErrorCodeUnknown.WithDetail(err))
 				}
 
-				errors := context.GetErrors(ctx)
+				errors := acontext.GetErrors(ctx)
 				if err := errcode.ServeJSON(w, errors); err != nil {
-					context.GetLogger(ctx).Errorf("error serving error json: %v (from %s)", err, errors)
+					acontext.GetLogger(ctx).Errorf("error serving error json: %v (from %s)", err, errors)
 				}
 
 				return
@@ -123,9 +124,9 @@ func (app *App) dispatcher(dispatch dispatchFunc) http.Handler {
 
 		dispatch(ctx, r).ServeHTTP(w, r)
 
-		if errors := context.GetErrors(ctx); errors.Len() > 0 {
+		if errors := acontext.GetErrors(ctx); errors.Len() > 0 {
 			if err := errcode.ServeJSON(w, errors); err != nil {
-				context.GetLogger(ctx).Errorf("error serving error json: %v (from %s)", err, errors)
+				acontext.GetLogger(ctx).Errorf("error serving error json: %v (from %s)", err, errors)
 			}
 
 			app.logError(ctx, errors)
@@ -153,19 +154,19 @@ func (app *App) logError(ctx context.Context, errors errcode.Errors) {
 			lctx = context.WithValue(lctx, "err.message", err.Error())
 		}
 
-		lctx = context.WithLogger(ctx, context.GetLogger(lctx,
+		lctx = acontext.WithLogger(ctx, acontext.GetLogger(lctx,
 			"err.code",
 			"err.message",
 			"err.detail"))
 
-		context.GetResponseLogger(lctx).Errorf("response completed with error")
+		acontext.GetResponseLogger(lctx).Errorf("response completed with error")
 	}
 }
 
 func (app *App) context(w http.ResponseWriter, r *http.Request) *appRequestContext {
-	ctx := context.DefaultContextManager.Context(app, w, r)
-	ctx = context.WithVars(ctx, r)
-	ctx = context.WithLogger(ctx, context.GetLogger(ctx))
+	ctx := acontext.DefaultContextManager.Context(app, w, r)
+	ctx = acontext.WithVars(ctx, r)
+	ctx = acontext.WithLogger(ctx, acontext.GetLogger(ctx))
 	arc := &appRequestContext{
 		Context: ctx,
 	}
@@ -181,21 +182,21 @@ func (app *App) register(routeName string, dispatch dispatchFunc) {
 func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	ctx := context.DefaultContextManager.Context(app, w, r)
+	ctx := acontext.DefaultContextManager.Context(app, w, r)
 	defer func() {
 		status, ok := ctx.Value("http.response.status").(int)
 		if ok && status >= 200 && status <= 399 {
-			context.GetResponseLogger(ctx).Infof("response completed")
+			acontext.GetResponseLogger(ctx).Infof("response completed")
 		}
 	}()
 
 	var err error
-	w, err = context.GetResponseWriter(ctx)
+	w, err = acontext.GetResponseWriter(ctx)
 	if err != nil {
-		context.GetLogger(ctx).Warnf("response writer not found in context")
+		acontext.GetLogger(ctx).Warnf("response writer not found in context")
 	}
 
-	w.Header().Add("CSENSE-API-VERSION", context.GetVersion(ctx))
+	w.Header().Add("CSENSE-API-VERSION", acontext.GetVersion(ctx))
 	app.router.ServeHTTP(w, r)
 }
 

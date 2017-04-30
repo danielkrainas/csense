@@ -1,10 +1,10 @@
 package storage
 
 import (
+	"context"
 	"errors"
 
 	"github.com/danielkrainas/csense/api/v1"
-	"github.com/danielkrainas/csense/context"
 )
 
 var (

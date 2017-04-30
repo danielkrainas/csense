@@ -1,10 +1,11 @@
 package version
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/danielkrainas/csense/cmd"
-	"github.com/danielkrainas/csense/context"
+	"github.com/danielkrainas/gobag/cmd"
+	"github.com/danielkrainas/gobag/context"
 )
 
 func init() {
@@ -12,7 +13,7 @@ func init() {
 }
 
 func run(ctx context.Context, args []string) error {
-	fmt.Println("cSense v" + context.GetVersion(ctx))
+	fmt.Println("cSense v" + acontext.GetVersion(ctx))
 	return nil
 }
 

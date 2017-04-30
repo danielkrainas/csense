@@ -1,33 +1,36 @@
 package main
 
 import (
+	"context"
 	"math/rand"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/danielkrainas/gobag/cmd"
+	"github.com/danielkrainas/gobag/context"
 
-	"github.com/danielkrainas/csense/cmd"
 	_ "github.com/danielkrainas/csense/cmd/agent"
 	"github.com/danielkrainas/csense/cmd/root"
 	_ "github.com/danielkrainas/csense/cmd/version"
 	_ "github.com/danielkrainas/csense/containers/embedded"
-	"github.com/danielkrainas/csense/context"
-	_ "github.com/danielkrainas/csense/storage/consul"
-	_ "github.com/danielkrainas/csense/storage/etcd"
-	_ "github.com/danielkrainas/csense/storage/inmemory"
+	_ "github.com/danielkrainas/csense/storage/driver/consul"
+	_ "github.com/danielkrainas/csense/storage/driver/etcd"
+	_ "github.com/danielkrainas/csense/storage/driver/inmemory"
 )
 
 var appVersion string
 
-const DEFAULT_VERSION = "0.0.0-dev"
+const defaultVersion = "0.0.0-dev"
 
 func main() {
 	if appVersion == "" {
-		appVersion = DEFAULT_VERSION
+		appVersion = defaultVersion
 	}
 
 	rand.Seed(time.Now().Unix())
-	ctx := context.WithVersion(context.Background(), appVersion)
+	ctx := acontext.WithVersion(acontext.Background(), appVersion)
+	ctx = context.WithValue(ctx, "app.name", strings.Title(root.Info.Use))
 
 	dispatch := cmd.CreateDispatcher(ctx, root.Info)
 	if err := dispatch(); err != nil {

@@ -2,12 +2,13 @@ package hooks
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 
 	"github.com/danielkrainas/csense/api/v1"
-	"github.com/danielkrainas/csense/context"
 	"github.com/danielkrainas/csense/hooks/formatting"
+	"github.com/danielkrainas/gobag/context"
 )
 
 type Shooter interface {
@@ -17,7 +18,7 @@ type Shooter interface {
 type MockShooter struct{}
 
 func (s *MockShooter) Fire(ctx context.Context, r *v1.Reaction) error {
-	context.GetLogger(ctx).Warnf("fired event for container %q and hook %q", r.Container.Name, r.Hook.Name)
+	acontext.GetLogger(ctx).Warnf("fired event for container %q and hook %q", r.Container.Name, r.Hook.Name)
 	return nil
 }
 

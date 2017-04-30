@@ -1,12 +1,13 @@
 package inmemory
 
 import (
+	"context"
 	"sync"
 
+	"github.com/danielkrainas/gobag/util/uuid"
+
 	"github.com/danielkrainas/csense/api/v1"
-	"github.com/danielkrainas/csense/context"
 	"github.com/danielkrainas/csense/storage"
-	"github.com/danielkrainas/csense/uuid"
 )
 
 type hookStore struct {

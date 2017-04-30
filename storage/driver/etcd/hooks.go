@@ -1,14 +1,14 @@
 package inmemory
 
 import (
+	"context"
 	"encoding/json"
 
+	"github.com/danielkrainas/gobag/util/uuid"
 	"github.com/docker/libkv/store"
 
 	"github.com/danielkrainas/csense/api/v1"
-	"github.com/danielkrainas/csense/context"
 	"github.com/danielkrainas/csense/storage"
-	"github.com/danielkrainas/csense/uuid"
 )
 
 type hookStore struct {

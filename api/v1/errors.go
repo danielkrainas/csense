@@ -3,7 +3,7 @@ package v1
 import (
 	"net/http"
 
-	"github.com/danielkrainas/csense/api/errcode"
+	"github.com/danielkrainas/gobag/api/errcode"
 )
 
 const ErrorGroup = "csense.api.v1"

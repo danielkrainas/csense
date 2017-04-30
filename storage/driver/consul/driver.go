@@ -1,21 +1,23 @@
 package inmemory
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/danielkrainas/csense/context"
-	"github.com/danielkrainas/csense/storage"
-	"github.com/danielkrainas/csense/storage/factory"
+	"github.com/danielkrainas/gobag/decouple/drivers"
 	"github.com/docker/libkv"
 	"github.com/docker/libkv/store"
-	"github.com/docker/libkv/store/etcd"
+	"github.com/docker/libkv/store/consul"
+
+	"github.com/danielkrainas/csense/storage"
+	"github.com/danielkrainas/csense/storage/driver/factory"
 )
 
-type Factory struct{}
+type driverFactory struct{}
 
-func (d *Factory) Create(parameters map[string]interface{}) (storage.Driver, error) {
+func (f *driverFactory) Create(parameters map[string]interface{}) (drivers.DriverBase, error) {
 	keyRoot := "csense"
 	prefix, ok := parameters["root"].(string)
 	if ok && prefix != "" {
@@ -28,7 +30,7 @@ func (d *Factory) Create(parameters map[string]interface{}) (storage.Driver, err
 	}
 
 	kv, err := libkv.NewStore(
-		store.ETCD,
+		store.CONSUL,
 		[]string{addr},
 		&store.Config{
 			ConnectionTimeout: 10 * time.Second,
@@ -39,7 +41,7 @@ func (d *Factory) Create(parameters map[string]interface{}) (storage.Driver, err
 		return nil, err
 	}
 
-	return &Driver{
+	return &driver{
 		kv:      kv,
 		keyRoot: keyRoot,
 		hooks:   &hookStore{keyRoot, kv},
@@ -47,30 +49,30 @@ func (d *Factory) Create(parameters map[string]interface{}) (storage.Driver, err
 }
 
 func init() {
-	etcd.Register()
-	factory.Register("etcd", &Factory{})
+	consul.Register()
+	factory.Register("consul", &driverFactory{})
 }
 
-type Driver struct {
+type driver struct {
 	kv      store.Store
 	keyRoot string
 	hooks   *hookStore
 }
 
-var _ storage.Driver = &Driver{}
+var _ storage.Driver = &driver{}
 
-func (d *Driver) Init() error {
+func (d *driver) Init() error {
 	return nil
 }
 
-func (d *Driver) Setup(ctx context.Context) error {
+func (d *driver) Setup(ctx context.Context) error {
 	return storage.ErrNotSupported
 }
 
-func (d *Driver) Teardown(ctx context.Context) error {
+func (d *driver) Teardown(ctx context.Context) error {
 	return d.kv.DeleteTree(d.keyRoot)
 }
 
-func (d *Driver) Hooks() storage.HookStore {
+func (d *driver) Hooks() storage.HookStore {
 	return d.hooks
 }
