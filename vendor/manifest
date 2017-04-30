@@ -134,6 +134,15 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/danielkrainas/gobag/configuration",
+			"repository": "https://github.com/danielkrainas/gobag",
+			"vcs": "git",
+			"revision": "418aa42335dc400beb53970dd46190316beb60be",
+			"branch": "master",
+			"path": "/configuration",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/danielkrainas/gobag/context",
 			"repository": "https://github.com/danielkrainas/gobag",
 			"vcs": "git",
@@ -174,6 +183,14 @@
 			"vcs": "git",
 			"revision": "4da3e2cfbabc9f751898f250b49f2439785783a1",
 			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/go-yaml/yaml",
+			"repository": "https://github.com/go-yaml/yaml",
+			"vcs": "git",
+			"revision": "cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b",
+			"branch": "v2",
 			"notests": true
 		},
 		{
