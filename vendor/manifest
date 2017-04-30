@@ -26,6 +26,22 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/codegangsta/inject",
+			"repository": "https://github.com/codegangsta/inject",
+			"vcs": "git",
+			"revision": "33e0aa1cb7c019ccc3fbe049a8262a6403d30504",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/codegangsta/negroni",
+			"repository": "https://github.com/codegangsta/negroni",
+			"vcs": "git",
+			"revision": "490e6a555d47ca891a89a150d0c1ef3922dfffe9",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/coreos/etcd/client",
 			"repository": "https://github.com/coreos/etcd",
 			"vcs": "git",
@@ -186,11 +202,27 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/go-martini/martini",
+			"repository": "https://github.com/go-martini/martini",
+			"vcs": "git",
+			"revision": "22fa46961aabd2665cf3f1343b146d20028f5071",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/go-yaml/yaml",
 			"repository": "https://github.com/go-yaml/yaml",
 			"vcs": "git",
 			"revision": "cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b",
 			"branch": "v2",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/goji/param",
+			"repository": "https://github.com/goji/param",
+			"vcs": "git",
+			"revision": "d7f49fd7d1ed53fd562e737a8b5bbcc7e3d925e2",
+			"branch": "master",
 			"notests": true
 		},
 		{
@@ -1017,6 +1049,22 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/julienschmidt/httprouter",
+			"repository": "https://github.com/julienschmidt/httprouter",
+			"vcs": "git",
+			"revision": "bc86d8427281a89790f5768df44a798197f2653e",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/justinas/alice",
+			"repository": "https://github.com/justinas/alice",
+			"vcs": "git",
+			"revision": "1051eaf52fcafdd87ead59d28b065f1fcb8274ec",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/kr/fs",
 			"repository": "https://github.com/kr/fs",
 			"vcs": "git",
@@ -1033,10 +1081,26 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/martini-contrib/render",
+			"repository": "https://github.com/martini-contrib/render",
+			"vcs": "git",
+			"revision": "ec18f8345a1181146728238980606fb1d6f40e8c",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/mitchellh/mapstructure",
 			"repository": "https://github.com/mitchellh/mapstructure",
 			"vcs": "git",
 			"revision": "cc8532a8e9a55ea36402aa21efdf403a60d34096",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/oxtoacart/bpool",
+			"repository": "https://github.com/oxtoacart/bpool",
+			"vcs": "git",
+			"revision": "4e1c5567d7c2dd59fa4c7c83d34c2f3528b025d6",
 			"branch": "master",
 			"notests": true
 		},
@@ -1069,6 +1133,22 @@
 			"repository": "https://github.com/pkg/sftp",
 			"vcs": "git",
 			"revision": "dddd9cf3c7889aa0fefd2e8a529367a3e1f3b669",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/rs/cors",
+			"repository": "https://github.com/rs/cors",
+			"vcs": "git",
+			"revision": "2d7dd2a10331137ae3f931ba08c21fd00cbf208d",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/rs/xhandler",
+			"repository": "https://github.com/rs/xhandler",
+			"vcs": "git",
+			"revision": "ed27b6fd65218132ee50cd95f38474a3d8a2cd12",
 			"branch": "master",
 			"notests": true
 		},
@@ -1192,6 +1272,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/urfave/negroni",
+			"repository": "https://github.com/urfave/negroni",
+			"vcs": "git",
+			"revision": "490e6a555d47ca891a89a150d0c1ef3922dfffe9",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/xordataexchange/crypt/backend",
 			"repository": "https://github.com/xordataexchange/crypt",
 			"vcs": "git",
@@ -1216,6 +1304,14 @@
 			"revision": "749e360c8f236773f28fc6d3ddfce4a470795227",
 			"branch": "master",
 			"path": "encoding/secconf",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/zenazn/goji",
+			"repository": "https://github.com/zenazn/goji",
+			"vcs": "git",
+			"revision": "4d7077956293261309684d3cf1af673f773c6819",
+			"branch": "master",
 			"notests": true
 		},
 		{
