@@ -168,6 +168,15 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/danielkrainas/gobag/decouple/cqrs",
+			"repository": "https://github.com/danielkrainas/gobag",
+			"vcs": "git",
+			"revision": "418aa42335dc400beb53970dd46190316beb60be",
+			"branch": "master",
+			"path": "/decouple/cqrs",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/danielkrainas/gobag/decouple/drivers",
 			"repository": "https://github.com/danielkrainas/gobag",
 			"vcs": "git",
