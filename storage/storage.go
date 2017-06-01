@@ -13,7 +13,6 @@ var (
 )
 
 type Driver interface {
-	Init() error
 	Setup(ctx context.Context) error
 	Teardown(ctx context.Context) error
 
@@ -21,8 +20,10 @@ type Driver interface {
 }
 
 type HookStore interface {
-	GetByID(ctx context.Context, id string) (*v1.Hook, error)
-	Delete(ctx context.Context, id string) error
-	Store(ctx context.Context, hook *v1.Hook) error
-	GetAll(ctx context.Context) ([]*v1.Hook, error)
+	Find(id string) (*v1.Hook, error)
+	Delete(id string) error
+	Store(hook *v1.Hook, isNew bool) error
+	FindMany(filters *HookFilters) ([]*v1.Hook, error)
 }
+
+type HookFilters struct{}

@@ -1,10 +1,8 @@
 package inmemory
 
 import (
-	"context"
 	"encoding/json"
 
-	"github.com/danielkrainas/gobag/util/uuid"
 	"github.com/docker/libkv/store"
 
 	"github.com/danielkrainas/csense/api/v1"
@@ -26,7 +24,7 @@ func (store *hookStore) getHookKey(id string) string {
 	return store.getHooksKey() + "." + id
 }
 
-func (store *hookStore) GetByID(ctx context.Context, id string) (*v1.Hook, error) {
+func (store *hookStore) Find(id string) (*v1.Hook, error) {
 	pair, err := store.kv.Get(store.getHookKey(id))
 	if err != nil {
 		return nil, storage.ErrNotFound
@@ -40,7 +38,7 @@ func (store *hookStore) GetByID(ctx context.Context, id string) (*v1.Hook, error
 	return hook, nil
 }
 
-func (store *hookStore) GetAll(ctx context.Context) ([]*v1.Hook, error) {
+func (store *hookStore) FindMany(filters *storage.HookFilters) ([]*v1.Hook, error) {
 	pairs, err := store.kv.List(store.getHooksKey())
 	if err != nil {
 		return nil, err
@@ -60,11 +58,7 @@ func (store *hookStore) GetAll(ctx context.Context) ([]*v1.Hook, error) {
 	return results, nil
 }
 
-func (store *hookStore) Store(ctx context.Context, hook *v1.Hook) error {
-	if hook.ID == "" {
-		hook.ID = uuid.Generate()
-	}
-
+func (store *hookStore) Store(hook *v1.Hook, isNew bool) error {
 	data, err := json.Marshal(hook)
 	if err != nil {
 		return err
@@ -73,7 +67,7 @@ func (store *hookStore) Store(ctx context.Context, hook *v1.Hook) error {
 	return store.kv.Put(store.getHookKey(hook.ID), data, nil)
 }
 
-func (store *hookStore) Delete(ctx context.Context, id string) error {
+func (store *hookStore) Delete(id string) error {
 	key := store.getHookKey(id)
 	exists, err := store.kv.Exists(key)
 	if err != nil {

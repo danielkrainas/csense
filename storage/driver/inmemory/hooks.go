@@ -1,10 +1,7 @@
 package inmemory
 
 import (
-	"context"
 	"sync"
-
-	"github.com/danielkrainas/gobag/util/uuid"
 
 	"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/storage"
@@ -17,7 +14,7 @@ type hookStore struct {
 
 var _ storage.HookStore = (*hookStore)(nil)
 
-func (store *hookStore) GetByID(ctx context.Context, id string) (*v1.Hook, error) {
+func (store *hookStore) Find(id string) (*v1.Hook, error) {
 	store.mutex.Lock()
 	defer store.mutex.Unlock()
 
@@ -29,7 +26,7 @@ func (store *hookStore) GetByID(ctx context.Context, id string) (*v1.Hook, error
 	return hook, nil
 }
 
-func (store *hookStore) GetAll(ctx context.Context) ([]*v1.Hook, error) {
+func (store *hookStore) FindMany(filters *storage.HookFilters) ([]*v1.Hook, error) {
 	store.mutex.Lock()
 	defer store.mutex.Unlock()
 
@@ -43,7 +40,7 @@ func (store *hookStore) GetAll(ctx context.Context) ([]*v1.Hook, error) {
 	return results, nil
 }
 
-func (store *hookStore) Store(ctx context.Context, hook *v1.Hook) error {
+func (store *hookStore) Store(hook *v1.Hook, isNew bool) error {
 	store.mutex.Lock()
 	defer store.mutex.Unlock()
 
@@ -51,16 +48,12 @@ func (store *hookStore) Store(ctx context.Context, hook *v1.Hook) error {
 		store.idLookup = map[string]*v1.Hook{}
 	}
 
-	if hook.ID == "" {
-		hook.ID = uuid.Generate()
-	}
-
 	dupe := *hook
 	store.idLookup[hook.ID] = &dupe
 	return nil
 }
 
-func (store *hookStore) Delete(ctx context.Context, id string) error {
+func (store *hookStore) Delete(id string) error {
 	store.mutex.Lock()
 	defer store.mutex.Unlock()
 

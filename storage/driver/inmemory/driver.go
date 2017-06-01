@@ -27,10 +27,6 @@ type driver struct {
 
 var _ storage.Driver = &driver{}
 
-func (d *driver) Init() error {
-	return nil
-}
-
 func (d *driver) Setup(ctx context.Context) error {
 	return storage.ErrNotSupported
 }
