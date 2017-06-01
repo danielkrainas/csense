@@ -1,16 +1,12 @@
 package hooks
 
 import (
-	"context"
 	"regexp"
-	"sync"
 	"time"
 
-	"github.com/danielkrainas/gobag/context"
 	"github.com/danielkrainas/gobag/util/uuid"
 
 	"github.com/danielkrainas/csense/api/v1"
-	"github.com/danielkrainas/csense/storage"
 )
 
 type Filter interface {
@@ -88,7 +84,7 @@ func FilterAll(hooks []*v1.Hook, c *v1.ContainerInfo, f Filter) []*v1.Hook {
 	return results
 }
 
-type Cache struct {
+/*type Cache struct {
 	ticker *time.Ticker
 	update sync.Mutex
 	hooks  []*v1.Hook
@@ -109,7 +105,7 @@ func NewCache(ctx context.Context, d time.Duration, store storage.HookStore) *Ca
 	go func() {
 		for {
 			<-c.ticker.C
-			hooks, err := store.GetAll(ctx)
+			hooks, err := store.FindMany(&storage.HookFilters{})
 			if err != nil {
 				acontext.GetLogger(ctx).Warnf("error caching hooks: %v", err)
 				continue
@@ -123,3 +119,4 @@ func NewCache(ctx context.Context, d time.Duration, store storage.HookStore) *Ca
 
 	return c
 }
+*/
