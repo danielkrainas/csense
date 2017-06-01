@@ -18,7 +18,7 @@ import (
 
 	"github.com/danielkrainas/csense/api/v1"
 	"github.com/danielkrainas/csense/containers"
-	"github.com/danielkrainas/csense/containers/factory"
+	"github.com/danielkrainas/csense/containers/driver/factory"
 )
 
 var parseOnce sync.Once

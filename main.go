@@ -13,7 +13,7 @@ import (
 	_ "github.com/danielkrainas/csense/cmd/agent"
 	"github.com/danielkrainas/csense/cmd/root"
 	_ "github.com/danielkrainas/csense/cmd/version"
-	_ "github.com/danielkrainas/csense/containers/embedded"
+	_ "github.com/danielkrainas/csense/containers/driver/embedded"
 	_ "github.com/danielkrainas/csense/storage/driver/consul"
 	_ "github.com/danielkrainas/csense/storage/driver/etcd"
 	_ "github.com/danielkrainas/csense/storage/driver/inmemory"
