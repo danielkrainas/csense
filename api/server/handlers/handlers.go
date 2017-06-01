@@ -9,7 +9,7 @@ import (
 	"github.com/danielkrainas/gobag/context"
 	"github.com/urfave/negroni"
 
-	"github.com/danielkrainas/shexd/api/v1"
+	"github.com/danielkrainas/csense/api/v1"
 )
 
 func Base(w http.ResponseWriter, r *http.Request) {
