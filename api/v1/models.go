@@ -21,8 +21,8 @@ type Condition struct {
 }
 
 type Criteria struct {
-	Fields map[ContainerField]*Condition
-	Labels map[string]string `json:"labels,omitempty"`
+	Fields map[ContainerField]*Condition `json:"fields,omitempty"`
+	Labels map[string]string             `json:"labels,omitempty"`
 }
 
 type ContainerField string
