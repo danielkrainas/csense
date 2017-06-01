@@ -69,18 +69,6 @@ func (agent *Agent) ProcessEvents() {
 	acontext.GetLogger(agent).Info("event monitor started")
 	defer acontext.GetLogger(agent).Info("event monitor stopped")
 	for event := range eventChan.GetChannel() {
-		//if container, err := agent.executeQuery(&queries.GetContainer{Name: event.Container.Name}); err != nil {
-		/*if err == containers.ErrContainerNotFound {
-			acontext.GetLogger(agent).Warnf("event container info for %q not available", event.Container.Name)
-		} else {
-			acontext.GetLogger(agent).Errorf("error getting event container info: %v", err)
-		}*/
-
-		//continue
-		//} else {
-		//event.Container = container.(*v1.ContainerInfo)
-		//}
-
 		var allHooks []*v1.Hook
 		if rawHooks, err := agent.executeQuery(&queries.SearchHooks{}); err != nil {
 			acontext.GetLogger(agent).Errorf("error getting hooks: %v", err)
