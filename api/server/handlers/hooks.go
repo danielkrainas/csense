@@ -66,7 +66,7 @@ func Hooks(actionPack actions.Pack) http.HandlerFunc {
 		switch r.Method {
 		case http.MethodGet:
 			GetAllHooks(actionPack, w, r)
-		case http.MethodPost:
+		case http.MethodPut:
 			CreateHook(actionPack, w, r)
 		default:
 			http.NotFound(w, r)
