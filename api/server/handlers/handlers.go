@@ -59,6 +59,8 @@ func Logging(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		status, ok := ctx.Value("http.response.status").(int)
 		if ok && status >= 200 && status <= 399 {
 			acontext.GetResponseLogger(ctx).Info("response completed")
+		} else {
+			acontext.GetResponseLogger(ctx).Warn("response completed with error")
 		}
 	}()
 
