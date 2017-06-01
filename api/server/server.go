@@ -6,104 +6,80 @@ import (
 	"net"
 	"net/http"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/danielkrainas/gobag/context"
 	"github.com/rs/cors"
 	"github.com/urfave/negroni"
 
+	"github.com/danielkrainas/csense/actions"
 	"github.com/danielkrainas/csense/api/server/handlers"
 	"github.com/danielkrainas/csense/configuration"
-	"github.com/danielkrainas/gobag/context"
 )
 
-type Server struct {
-	config *configuration.Config
-	app    *handlers.App
-	server *http.Server
-}
-
-func New(ctx context.Context, config *configuration.Config) (*Server, error) {
-	app, err := handlers.NewApp(ctx, config)
+func New(ctx context.Context, config configuration.HTTPConfig, actionPack actions.Pack, quitCh chan struct{}) (*Server, error) {
+	api, err := handlers.NewApi(actionPack)
 	if err != nil {
-		return nil, fmt.Errorf("error creating server app: %v", err)
+		return nil, fmt.Errorf("error creating api server: %v", err)
 	}
 
-	handler := alive("/", app)
-	handler = panicHandler(handler)
-	handler = contextHandler(app, handler)
-	handler = loggingHandler(app, handler)
-
+	log := acontext.GetLogger(ctx)
 	n := negroni.New()
 
 	n.Use(cors.New(cors.Options{
-		AllowedOrigins:   config.HTTP.CORS.Origins,
-		AllowedMethods:   config.HTTP.CORS.Methods,
+		AllowedOrigins:   config.CORS.Origins,
+		AllowedMethods:   config.CORS.Methods,
 		AllowCredentials: true,
-		AllowedHeaders:   config.HTTP.CORS.Headers,
-		Debug:            config.HTTP.CORS.Debug,
+		AllowedHeaders:   config.CORS.Headers,
+		Debug:            false,
 	}))
 
-	n.UseHandler(handler)
+	n.Use(handlers.Context(ctx))
+	n.UseFunc(handlers.Logging)
+	n.Use(&negroni.Recovery{
+		Logger:     negroni.ALogger(log),
+		PrintStack: true,
+		StackAll:   true,
+	})
+
+	n.Use(handlers.Alive("/"))
+	n.UseFunc(handlers.TrackErrors)
+	n.UseHandler(api)
 
 	s := &Server{
-		app:    app,
-		config: config,
+		Context: ctx,
+		api:     api,
+		config:  config,
 		server: &http.Server{
-			Addr:    config.HTTP.Addr,
+			Addr:    config.Addr,
 			Handler: n,
 		},
 	}
 
+	go s.waitForQuit(quitCh)
 	return s, nil
+}
+
+type Server struct {
+	context.Context
+	config configuration.HTTPConfig
+	server *http.Server
+	api    *handlers.Api
+}
+
+func (server *Server) waitForQuit(quitCh chan struct{}) {
+	<-quitCh
+	acontext.GetLogger(server).Info("starting server shutdown")
+	if err := server.server.Shutdown(nil); err != nil {
+		acontext.GetLogger(server).Errorf("error shutting down server: %v", err)
+	}
 }
 
 func (server *Server) ListenAndServe() error {
 	config := server.config
-	ln, err := net.Listen("tcp", config.HTTP.Addr)
+	ln, err := net.Listen("tcp", config.Addr)
 	if err != nil {
 		return err
 	}
 
-	acontext.GetLogger(server.app).Infof("listening on %v", ln.Addr())
+	acontext.GetLogger(server).Infof("listening on %v", ln.Addr())
 	return server.server.Serve(ln)
-}
-
-func panicHandler(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if err := recover(); err != nil {
-				log.Panicf("%v", err)
-			}
-		}()
-
-		handler.ServeHTTP(w, r)
-	})
-}
-
-func alive(path string, handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == path {
-			w.Header().Set("Cache-Control", "no-cache")
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		handler.ServeHTTP(w, r)
-	})
-}
-
-func contextHandler(parent context.Context, handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := acontext.DefaultContextManager.Context(parent, w, r)
-		defer acontext.DefaultContextManager.Release(ctx)
-
-		handler.ServeHTTP(w, r)
-	})
-}
-
-func loggingHandler(parent context.Context, handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := acontext.DefaultContextManager.Context(parent, w, r)
-		acontext.GetRequestLogger(ctx).Info("request started")
-		handler.ServeHTTP(w, r)
-	})
 }

@@ -9,104 +9,13 @@ import (
 
 	"github.com/danielkrainas/gobag/api/errcode"
 	"github.com/danielkrainas/gobag/context"
-	"github.com/gorilla/handlers"
+	"github.com/danielkrainas/gobag/decouple/cqrs"
 
+	"github.com/danielkrainas/csense/actions"
 	"github.com/danielkrainas/csense/api/v1"
-	"github.com/danielkrainas/csense/storage"
+	"github.com/danielkrainas/csense/commands"
+	"github.com/danielkrainas/csense/queries"
 )
-
-func hookListDispatcher(ctx context.Context, r *http.Request) http.Handler {
-	h := &hookHandler{
-		Context: ctx,
-	}
-
-	return handlers.MethodHandler{
-		"GET":  http.HandlerFunc(h.GetAllHooks),
-		"POST": http.HandlerFunc(h.CreateHook),
-	}
-}
-
-func hookDispatcher(ctx context.Context, r *http.Request) http.Handler {
-	h := &hookHandler{
-		Context: ctx,
-	}
-
-	return handlers.MethodHandler{
-		"GET":    http.HandlerFunc(h.GetHook),
-		"DELETE": http.HandlerFunc(h.DeleteHook),
-		"PUT":    http.HandlerFunc(h.ModifyHook),
-	}
-}
-
-type hookHandler struct {
-	context.Context
-}
-
-func (ctx *hookHandler) GetHook(w http.ResponseWriter, r *http.Request) {
-	acontext.GetLogger(ctx).Debug("GetHook begin")
-	defer acontext.GetLogger(ctx).Debug("GetHook end")
-
-	hook := ctx.Value("hook").(*v1.Hook)
-	if err := v1.ServeJSON(w, hook); err != nil {
-		acontext.GetLogger(ctx).Errorf("error sending hook json: %v", err)
-	}
-}
-
-func (ctx *hookHandler) DeleteHook(w http.ResponseWriter, r *http.Request) {
-	acontext.GetLogger(ctx).Debug("DeleteHook begin")
-	defer acontext.GetLogger(ctx).Debug("DeleteHook end")
-
-	hookID := acontext.GetStringValue(ctx, "vars.hook_id")
-	err := storage.FromContext(ctx).Hooks().Delete(ctx, hookID)
-	if err != nil {
-		acontext.GetLogger(ctx).Error(err)
-		ctx.Context = acontext.AppendError(ctx.Context, errcode.ErrorCodeUnknown.WithDetail(err))
-		return
-	}
-
-	acontext.GetLoggerWithField(ctx, "hook.id", hookID).Info("hook deleted")
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func (ctx *hookHandler) CreateHook(w http.ResponseWriter, r *http.Request) {
-	acontext.GetLogger(ctx).Debug("CreateHook begin")
-	defer acontext.GetLogger(ctx).Debug("CreateHook end")
-
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		acontext.GetLogger(ctx).Error(err)
-		ctx.Context = acontext.AppendError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
-		return
-	}
-
-	hr := &v1.NewHookRequest{}
-	if err = json.Unmarshal(body, hr); err != nil {
-		acontext.GetLogger(ctx).Error(err)
-		ctx.Context = acontext.AppendError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
-		return
-	}
-
-	hook := &v1.Hook{
-		Created:  time.Now().Unix(),
-		Name:     hr.Name,
-		Criteria: hr.Criteria,
-		TTL:      hr.TTL,
-		Events:   hr.Events,
-		Format:   hr.Format,
-		Url:      hr.Url,
-	}
-
-	if err := storage.FromContext(ctx).Hooks().Store(ctx, hook); err != nil {
-		acontext.GetLogger(ctx).Error(err)
-		ctx.Context = acontext.AppendError(ctx.Context, errcode.ErrorCodeUnknown.WithDetail(err))
-		return
-	}
-
-	acontext.GetLoggerWithField(ctx, "hook.id", hook.ID).Info("hook created")
-	if err := v1.ServeJSON(w, hook); err != nil {
-		acontext.GetLogger(ctx).Errorf("error sending hook json: %v", err)
-	}
-}
 
 func mergeHookUpdate(h *v1.Hook, r *v1.ModifyHookRequest) {
 	if r.Name != "" {
@@ -148,50 +57,174 @@ func mergeHookUpdate(h *v1.Hook, r *v1.ModifyHookRequest) {
 	h.Events = results
 }
 
-func (ctx *hookHandler) ModifyHook(w http.ResponseWriter, r *http.Request) {
-	acontext.GetLogger(ctx).Debug("ModifyHook begin")
-	defer acontext.GetLogger(ctx).Debug("ModifyHook end")
+func getHookLogger(ctx context.Context, hookID string) acontext.Logger {
+	return acontext.GetLoggerWithField(ctx, "hook.id", hookID)
+}
 
-	existing := ctx.Value("hook").(*v1.Hook)
+func Hooks(actionPack actions.Pack) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			GetAllHooks(actionPack, w, r)
+		case http.MethodPost:
+			CreateHook(actionPack, w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+func HookMetadata(actionPack actions.Pack) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		hookID := acontext.GetStringValue(ctx, "vars.hook_id")
+		if hookID == "" {
+			http.NotFound(w, r)
+			return
+		}
+
+		hook, err := actionPack.Execute(ctx, &queries.FindHook{ID: hookID})
+		if err != nil {
+			acontext.GetLogger(ctx).Warnf("hook %q not found", hookID)
+			http.NotFound(w, r)
+			return
+		}
+
+		realHook, ok := hook.(*v1.Hook)
+		if !ok {
+			acontext.GetLogger(ctx).Warn("invalid hook data")
+			acontext.TrackError(ctx, errcode.ErrorCodeUnknown)
+			return
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			GetHook(realHook, w, r)
+		case http.MethodPut:
+			ModifyHook(realHook, actionPack, w, r)
+		case http.MethodDelete:
+			DeleteHook(realHook, actionPack, w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+func GetHook(hook *v1.Hook, w http.ResponseWriter, r *http.Request) {
+	log := acontext.GetLogger(r.Context())
+	log.Debug("GetHook begin")
+	defer log.Debug("GetHook end")
+
+	if err := v1.ServeJSON(w, hook); err != nil {
+		acontext.GetLogger(r.Context()).Errorf("error sending hook json: %v", err)
+	}
+}
+
+func DeleteHook(hook *v1.Hook, c cqrs.CommandHandler, w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	log := acontext.GetLogger(ctx)
+	log.Debug("DeleteHook begin")
+	defer log.Debug("DeleteHook end")
+
+	if err := c.Handle(ctx, &commands.DeleteHook{ID: hook.ID}); err != nil {
+		log.Error(err)
+		acontext.TrackError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
+		return
+	}
+
+	getHookLogger(ctx, hook.ID).Infof("hook %q deleted", hook.ID)
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func ModifyHook(existingHook *v1.Hook, c cqrs.CommandHandler, w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	log := acontext.GetLogger(ctx)
+	log.Debug("ModifyHook begin")
+	defer log.Debug("ModifyHook end")
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		acontext.GetLogger(ctx).Error(err)
-		ctx.Context = acontext.AppendError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
+		log.Error(err)
+		acontext.TrackError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
 		return
 	}
 
 	mr := &v1.ModifyHookRequest{}
 	if err = json.Unmarshal(body, mr); err != nil {
-		acontext.GetLogger(ctx).Error(err)
-		ctx.Context = acontext.AppendError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
+		log.Error(err)
+		acontext.TrackError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
 		return
 	}
 
-	mergeHookUpdate(existing, mr)
-	if err := storage.FromContext(ctx).Hooks().Store(ctx, existing); err != nil {
-		acontext.GetLogger(ctx).Error(err)
-		ctx.Context = acontext.AppendError(ctx.Context, errcode.ErrorCodeUnknown.WithDetail(err))
+	mergeHookUpdate(existingHook, mr)
+	if err := c.Handle(ctx, &commands.StoreHook{Hook: existingHook}); err != nil {
+		log.Error(err)
+		acontext.TrackError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
 		return
 	}
 
-	acontext.GetLogger(ctx).Info("hook saved")
-	if err := v1.ServeJSON(w, existing); err != nil {
-		acontext.GetLogger(ctx).Errorf("error sending hook json: %v", err)
+	getHookLogger(ctx, existingHook.ID).Infof("hook %q updated", existingHook.ID)
+	if err := v1.ServeJSON(w, existingHook); err != nil {
+		log.Errorf("error sending hook json: %v", err)
 	}
 }
 
-func (ctx *hookHandler) GetAllHooks(w http.ResponseWriter, r *http.Request) {
-	acontext.GetLogger(ctx).Debug("GetAllHooks begin")
-	defer acontext.GetLogger(ctx).Debug("GetAllHooks end")
+func CreateHook(c cqrs.CommandHandler, w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	log := acontext.GetLogger(ctx)
+	log.Debug("CreateHook begin")
+	defer log.Debug("CreateHook end")
 
-	hooks, err := storage.FromContext(ctx).Hooks().GetAll(ctx)
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		acontext.GetLogger(ctx).Error(err)
-		ctx.Context = acontext.AppendError(ctx.Context, errcode.ErrorCodeUnknown.WithDetail(err))
+		log.Error(err)
+		acontext.TrackError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
+		return
+	}
+
+	hr := &v1.NewHookRequest{}
+	if err = json.Unmarshal(body, hr); err != nil {
+		log.Error(err)
+		acontext.TrackError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
+		return
+	}
+
+	hook := &v1.Hook{
+		Created:  time.Now().Unix(),
+		Name:     hr.Name,
+		Criteria: hr.Criteria,
+		TTL:      hr.TTL,
+		Events:   hr.Events,
+		Format:   hr.Format,
+		Url:      hr.Url,
+	}
+
+	if err = c.Handle(ctx, &commands.StoreHook{Hook: hook, New: true}); err != nil {
+		log.Error(err)
+		acontext.TrackError(ctx, errcode.ErrorCodeUnknown.WithDetail(err))
+		return
+	}
+
+	getHookLogger(ctx, hook.ID).Infof("hook %q created", hook.ID)
+	if err := v1.ServeJSON(w, hook); err != nil {
+		log.Errorf("error sending hook json: %v", err)
+	}
+}
+
+func GetAllHooks(q cqrs.QueryExecutor, w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	log := acontext.GetLogger(ctx)
+	log.Debug("GetAllHooks begin")
+	defer log.Debug("GetAllHooks end")
+
+	hooks, err := q.Execute(ctx, &queries.SearchHooks{})
+	if err != nil {
+		log.Error(err)
+		acontext.TrackError(ctx, err)
 		return
 	}
 
 	if err := v1.ServeJSON(w, hooks); err != nil {
-		acontext.GetLogger(ctx).Errorf("error sending api hooks json: %v", err)
+		log.Errorf("error sending hooks json: %v", err)
 	}
 }
