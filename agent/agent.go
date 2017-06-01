@@ -2,52 +2,39 @@ package agent
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
-	cfg "github.com/danielkrainas/gobag/configuration"
 	"github.com/danielkrainas/gobag/context"
+	"github.com/danielkrainas/gobag/decouple/cqrs"
 
-	"github.com/danielkrainas/csense/api/server"
+	"github.com/danielkrainas/csense/actions"
 	"github.com/danielkrainas/csense/api/v1"
-	"github.com/danielkrainas/csense/configuration"
 	"github.com/danielkrainas/csense/containers"
-	containersFactory "github.com/danielkrainas/csense/containers/factory"
 	"github.com/danielkrainas/csense/hooks"
-	"github.com/danielkrainas/csense/storage"
-	storageDriverFactory "github.com/danielkrainas/csense/storage/driver/factory"
-	storageLoader "github.com/danielkrainas/csense/storage/loader"
+	"github.com/danielkrainas/csense/queries"
 )
 
 type Agent struct {
 	context.Context
-
-	config *configuration.Config
-
-	containers containers.Driver
-
-	storage storage.Driver
-
-	server *server.Server
-
 	hookFilter hooks.Filter
-
-	shooter hooks.Shooter
+	shooter    hooks.Shooter
+	quitCh     chan struct{}
+	actions    actions.Pack
 }
 
-func (agent *Agent) Run() error {
+func (agent *Agent) Run() {
 	acontext.GetLogger(agent).Info("starting agent")
 	defer acontext.GetLogger(agent).Info("shutting down agent")
-
-	if agent.config.HTTP.Enabled {
-		go agent.server.ListenAndServe()
-	}
-
 	agent.ProcessEvents()
-	return nil
+
+	defer func() {
+		if err := recover(); err != nil {
+			acontext.GetLogger(agent).Errorf("unrecoverable agent error: %v", err)
+			close(agent.quitCh)
+		}
+	}()
 }
 
 func (agent *Agent) getHostInfo() *v1.HostInfo {
@@ -57,165 +44,78 @@ func (agent *Agent) getHostInfo() *v1.HostInfo {
 	}
 }
 
+func (agent *Agent) executeQuery(q cqrs.Query) (interface{}, error) {
+	return agent.actions.Execute(agent, q)
+}
+
+func (agent *Agent) runCommand(c cqrs.Command) error {
+	return agent.actions.Handle(agent, c)
+}
+
 func (agent *Agent) ProcessEvents() {
 	host := agent.getHostInfo()
-	cache := hooks.NewCache(agent, time.Duration(10)*time.Second, agent.storage.Hooks())
-	eventChan, err := agent.containers.WatchEvents(agent, v1.EventContainerCreation, v1.EventContainerDeletion)
+	containerEvents, err := agent.executeQuery(&queries.GetContainerEvents{
+		Types: []v1.ContainerEventType{
+			v1.EventContainerCreation,
+			v1.EventContainerDeletion,
+		},
+	})
+
 	if err != nil {
 		acontext.GetLogger(agent).Panicf("error opening event channel: %v", err)
 	}
 
+	eventChan := containerEvents.(containers.EventsChannel)
 	acontext.GetLogger(agent).Info("event monitor started")
 	defer acontext.GetLogger(agent).Info("event monitor stopped")
 	for event := range eventChan.GetChannel() {
-		c, err := agent.containers.GetContainer(agent, event.Container.Name)
-		if err != nil {
-			if err == containers.ErrContainerNotFound {
-				acontext.GetLogger(agent).Warnf("event container info for %q not available", event.Container.Name)
-			} else {
-				acontext.GetLogger(agent).Errorf("error getting event container info: %v", err)
-			}
+		//if container, err := agent.executeQuery(&queries.GetContainer{Name: event.Container.Name}); err != nil {
+		/*if err == containers.ErrContainerNotFound {
+			acontext.GetLogger(agent).Warnf("event container info for %q not available", event.Container.Name)
+		} else {
+			acontext.GetLogger(agent).Errorf("error getting event container info: %v", err)
+		}*/
 
+		//continue
+		//} else {
+		//event.Container = container.(*v1.ContainerInfo)
+		//}
+
+		var allHooks []*v1.Hook
+		if rawHooks, err := agent.executeQuery(&queries.SearchHooks{}); err != nil {
+			acontext.GetLogger(agent).Errorf("error getting hooks: %v", err)
 			continue
+		} else {
+			allHooks = rawHooks.([]*v1.Hook)
 		}
 
-		event.Container = c
-		allHooks := cache.Hooks()
-		for _, hook := range hooks.FilterAll(allHooks, c, agent.hookFilter) {
+		acontext.GetLogger(agent).Infof("processing event for container %s", event.Container.Name)
+		for _, hook := range hooks.FilterAll(allHooks, event.Container, agent.hookFilter) {
 			r := &v1.Reaction{
-				Container: c,
+				Container: event.Container,
 				Hook:      hook,
 				Host:      host,
 				Timestamp: time.Now().Unix(),
 			}
 
-			go func() {
+			go func(hook *v1.Hook) {
 				if err := agent.shooter.Fire(agent, r); err != nil {
 					acontext.GetLoggerWithField(agent, "hook.id", hook.ID).Errorf("error firing hook: %v", err)
 				}
-			}()
+			}(hook)
 		}
 	}
 }
 
-func New(ctx context.Context, config *configuration.Config) (*Agent, error) {
-	ctx, err := configureLogging(ctx, config)
-	if err != nil {
-		return nil, fmt.Errorf("error configuring logging: %v", err)
-	}
-
-	log := acontext.GetLogger(ctx)
-	log.Info("initializing agent")
-
-	ctx, containersDriver, err := configureContainers(ctx, config)
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, storageDriver, err := configureStorage(ctx, config)
-	if err != nil {
-		return nil, err
-	}
-
-	server, err := server.New(ctx, config)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Infof("using %q logging formatter", config.Log.Formatter)
-	log.Infof("using %q containers driver", config.Containers.Type())
-	storageLoader.LogSummary(ctx, config)
-	if !config.HTTP.Enabled {
-		log.Info("http api disabled")
-	}
-
+func New(ctx context.Context, actionPack actions.Pack, quitCh chan struct{}) (*Agent, error) {
+	acontext.GetLogger(ctx).Info("initializing agent")
 	return &Agent{
 		Context:    ctx,
-		config:     config,
-		containers: containersDriver,
-		storage:    storageDriver,
-		server:     server,
+		actions:    actionPack,
+		quitCh:     quitCh,
 		hookFilter: &hooks.CriteriaFilter{},
-		shooter:    &hooks.LiveShooter{http.DefaultClient},
+		shooter: &hooks.LiveShooter{
+			HttpClient: http.DefaultClient,
+		},
 	}, nil
-}
-
-func configureContainers(ctx context.Context, config *configuration.Config) (context.Context, containers.Driver, error) {
-	containersParams := config.Containers.Parameters()
-	if containersParams == nil {
-		containersParams = make(cfg.Parameters)
-	}
-
-	containersDriver, err := containersFactory.Create(config.Containers.Type(), containersParams)
-	if err != nil {
-		return ctx, nil, err
-	}
-
-	return context.WithValue(ctx, "containers", containersDriver), containersDriver, nil
-}
-
-func configureStorage(ctx context.Context, config *configuration.Config) (context.Context, storage.Driver, error) {
-	storageParams := config.Storage.Parameters()
-	if storageParams == nil {
-		storageParams = make(cfg.Parameters)
-	}
-
-	storageDriver, err := storageDriverFactory.Create(config.Storage.Type(), storageParams)
-	if err != nil {
-		return ctx, nil, err
-	}
-
-	if err := storageDriver.Init(); err != nil {
-		return ctx, nil, err
-	}
-
-	return storage.ForContext(ctx, storageDriver), storageDriver, nil
-}
-
-func configureLogging(ctx context.Context, config *configuration.Config) (context.Context, error) {
-	log.SetLevel(logLevel(config.Log.Level))
-	formatter := config.Log.Formatter
-	if formatter == "" {
-		formatter = "text"
-	}
-
-	switch formatter {
-	case "json":
-		log.SetFormatter(&log.JSONFormatter{
-			TimestampFormat: time.RFC3339Nano,
-		})
-
-	case "text":
-		log.SetFormatter(&log.TextFormatter{
-			TimestampFormat: time.RFC3339Nano,
-		})
-
-	default:
-		if config.Log.Formatter != "" {
-			return ctx, fmt.Errorf("unsupported log formatter: %q", config.Log.Formatter)
-		}
-	}
-
-	if len(config.Log.Fields) > 0 {
-		var fields []interface{}
-		for k := range config.Log.Fields {
-			fields = append(fields, k)
-		}
-
-		ctx = acontext.WithValues(ctx, config.Log.Fields)
-		ctx = acontext.WithLogger(ctx, acontext.GetLogger(ctx, fields...))
-	}
-
-	ctx = acontext.WithLogger(ctx, acontext.GetLogger(ctx))
-	return ctx, nil
-}
-
-func logLevel(level cfg.LogLevel) log.Level {
-	l, err := log.ParseLevel(string(level))
-	if err != nil {
-		l = log.InfoLevel
-		log.Warnf("error parsing level %q: %v, using %q", level, err, l)
-	}
-
-	return l
 }
