@@ -89,8 +89,10 @@ func (agent *Agent) ProcessEvents() {
 			allHooks = rawHooks.([]*v1.Hook)
 		}
 
-		acontext.GetLogger(agent).Infof("processing event for container %s", event.Container.Name)
-		for _, hook := range hooks.FilterAll(allHooks, event.Container, agent.hookFilter) {
+		acontext.GetLogger(agent).Infof("processing %s event for container %s", event.Type, event.Container.Name)
+		matchedHooks := hooks.FilterAll(allHooks, event.Container, agent.hookFilter)
+		acontext.GetLogger(agent).Infof("matched %d hook(s)", len(matchedHooks))
+		for _, hook := range matchedHooks {
 			r := &v1.Reaction{
 				Container: event.Container,
 				Hook:      hook,
@@ -99,6 +101,7 @@ func (agent *Agent) ProcessEvents() {
 			}
 
 			go func(hook *v1.Hook) {
+				acontext.GetLoggerWithField(agent, "hook.id", hook.ID).Debug("sending hook notification")
 				if err := agent.shooter.Fire(agent, r); err != nil {
 					acontext.GetLoggerWithField(agent, "hook.id", hook.ID).Errorf("error firing hook: %v", err)
 				}
