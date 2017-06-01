@@ -48,10 +48,12 @@ func IsValid(c *v1.Condition, v string) bool {
 
 	switch c.Op {
 	case v1.OperandEqualShort:
+		fallthrough
 	case v1.OperandEqual:
 		return c.Value == v
 
 	case v1.OperandNotEqualShort:
+		fallthrough
 	case v1.OperandNotEqual:
 		return c.Value != v
 
