@@ -19,7 +19,7 @@ Supported storage backends:
 
 > $ csense [command] <config_path>
 
-Most commands require a configuration path provided as an argument or in the `CSENSE_CONFIG_PATH` environment variable. 
+Most commands require a configuration path provided as an argument or in the `CSENSE_CONFIG_PATH` environment variable.
 
 ### Agent mode
 
@@ -33,7 +33,7 @@ This is the primary mode for cSense. It hosts the HTTP API server and handles mo
 
 ## Configuration
 
-A configuration file is *required* for cSense but environment variables can be used to override configuration. A configuration file can be specified as a parameter or with the `CSENSE_CONFIG_PATH` environment variable. 
+A configuration file is *required* for cSense but environment variables can be used to override configuration. A configuration file can be specified as a parameter or with the `CSENSE_CONFIG_PATH` environment variable.
 
 All configuration environment variables are prefixed by `CSENSE_` and the paths are separated by an underscore(`_`). Some examples:
 
@@ -45,8 +45,8 @@ All configuration environment variables are prefixed by `CSENSE_` and the paths 
 A development configuration file is included: `/config.dev.yml` and a `/config.local.yml` has already been added to gitignore to be used for local testing or development.
 
 ```yaml
-# configuration schema version number, only `0.1`
-version: 0.1
+# configuration schema version number, only `1.0`
+version: 1.0
 
 # log stuff
 logging:
@@ -97,7 +97,7 @@ For details on how to extend and develop cSense, see the [dev documentation](doc
 
 ## License
 
-[Unlicense](http://unlicense.org/UNLICENSE). This is a Public Domain work. 
+[Unlicense](http://unlicense.org/UNLICENSE). This is a Public Domain work.
 
 [![Public Domain](https://licensebuttons.net/p/mark/1.0/88x31.png)](http://questioncopyright.org/promise)
 
