@@ -12,21 +12,31 @@ func Slack(r *v1.Reaction) ([]byte, string, error) {
 		Attachments: []*attachment{
 			{
 				Fallback:   fmt.Sprintf("%s on %s", r.Container.Name, r.Host.Hostname),
-				Pretext:    fmt.Sprintf("The hook `%s` was triggered by a container", r.Hook.Name),
+				Pretext:    fmt.Sprintf("Container activity on %s for %q", r.Host.Hostname, r.Hook.Name),
 				MarkdownIn: []string{"pretext"},
 				Color:      "#394D54",
-				Title:      "Container " + r.Container.Name,
+				Title:      fmt.Sprintf("Container activity on %s for %q", r.Host.Hostname, r.Hook.Name),
 				Timestamp:  r.Timestamp,
 				Fields: []*field{
-					{
-						Title: "Image",
-						Value: r.Container.ImageName,
-						Short: len(r.Container.ImageName) > 20,
-					},
 					{
 						Title: "Host",
 						Value: r.Host.Hostname,
 						Short: true,
+					},
+					{
+						Title: "Hook",
+						Value: r.Hook.Name,
+						Short: true,
+					},
+					{
+						Title: "Container",
+						Value: r.Container.Name,
+						Short: false,
+					},
+					{
+						Title: "Image",
+						Value: r.Container.ImageName,
+						Short: len(r.Container.ImageName) > 20,
 					},
 				},
 			},
