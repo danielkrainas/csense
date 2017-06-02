@@ -77,6 +77,7 @@ func (agent *Agent) ProcessEvents() {
 			allHooks = rawHooks.([]*v1.Hook)
 		}
 
+		event.Container.State = v1.StateFromEvent(event.Type)
 		acontext.GetLogger(agent).Infof("processing %s event for container %s", event.Type, event.Container.Name)
 		matchedHooks := hooks.FilterAll(allHooks, event.Container, agent.hookFilter)
 		acontext.GetLogger(agent).Infof("matched %d hook(s)", len(matchedHooks))

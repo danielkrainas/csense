@@ -116,6 +116,7 @@ func convertContainerInfo(info cadvisorV1.ContainerInfo) *v1.ContainerInfo {
 		ImageName: imageName,
 		ImageTag:  imageTag,
 		Labels:    info.Labels,
+		State:     v1.StateUnknown,
 	}
 }
 
@@ -126,6 +127,7 @@ func convertContainerSpec(name string, spec cadvisorV2.ContainerSpec) *v1.Contai
 		ImageName: imageName,
 		ImageTag:  imageTag,
 		Labels:    spec.Labels,
+		State:     v1.StateUnknown,
 	}
 }
 

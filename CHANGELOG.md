@@ -3,8 +3,11 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- `state` field for container information.
 ### Changed
 - config version from 0.1 to 1.0.
+- `slack+json` formatting to clean things up.
 
 ## [1.0.0] - 2016-11-03
 ### Added

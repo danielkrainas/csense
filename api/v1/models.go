@@ -92,6 +92,7 @@ type ContainerInfo struct {
 	ImageName string            `json:"image_name"`
 	ImageTag  string            `json:"image_tag"`
 	Labels    map[string]string `json:"labels"`
+	State     ContainerState    `json:"state"`
 }
 
 type StateChange struct {
